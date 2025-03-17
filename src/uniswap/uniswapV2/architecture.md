@@ -128,6 +128,8 @@ function pairFor(
 由于池子旨在频繁使用，部署节省的成本最终会在几百笔交易后消失，因此值得将池子部署为新合约。
 
 ## Reference
+[https://www.rareskills.io/uniswap-v2-book](https://www.rareskills.io/uniswap-v2-book)
+
 [https://www.rareskills.io/post/eip-1167-minimal-proxy-standard-with-initialization-clone-pattern](https://www.rareskills.io/post/eip-1167-minimal-proxy-standard-with-initialization-clone-pattern)
 
 [https://www.rareskills.io/post/uniswap-v2-tutorial](https://www.rareskills.io/post/uniswap-v2-tutorial)
