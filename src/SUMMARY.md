@@ -20,4 +20,5 @@
   - [流动性代币](./uniswap/uniswapV2/mint_burn_lp.md)
   - [Uniswap协议手续费](./uniswap/uniswapV2/protocal_fee.md)
   - [代币价格预言机](./uniswap/uniswapV2/oracle.md)
+  - [库View函数](./uniswap/uniswapV2/contracts_library.md)
 ## UniswapV3
