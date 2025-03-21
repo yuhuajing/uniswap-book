@@ -21,4 +21,5 @@
   - [Uniswap协议手续费](./uniswap/uniswapV2/protocal_fee.md)
   - [代币价格预言机](./uniswap/uniswapV2/oracle.md)
   - [库View函数](./uniswap/uniswapV2/contracts_library.md)
+  - [Routes](./uniswap/uniswapV2/routes.md)
 ## UniswapV3
