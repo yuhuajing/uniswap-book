@@ -51,10 +51,10 @@
 
 ### Foundry
 
-[Foundry](https://github.com/foundry-rs/foundry) 是一套用于以太坊应用开发的工具包。我们将会使用以下这些工具：
-1. [Forge](https://github.com/foundry-rs/foundry/tree/master/forge)，一个 Solidity 的测试框架.
-2. [Anvil](https://github.com/foundry-rs/foundry/tree/master/anvil)，一个本地以太坊节点。我们将会用它来部署我们的合约，并且与前端 app 交互。
-3. [Cast](https://github.com/foundry-rs/foundry/tree/master/cast), 一个非常好用的 CLI 工具。
+[Foundry](https://book.getfoundry.sh/) 是一套用于以太坊应用开发的工具包。我们将会使用以下这些工具：
+1. [Forge](https://book.getfoundry.sh/forge/)，一个 Solidity 的测试框架.
+2. [Anvil](https://book.getfoundry.sh/anvil/)，一个本地以太坊节点。我们将会用它来部署我们的合约，并且与前端 app 交互。
+3. [Cast](https://book.getfoundry.sh/cast/), 一个非常好用的 CLI 工具。
 
 
 Forge 使智能合约开发更加容易。当使用 Forge 开发时，我们不需要运行一个本地节点来进行测试；Forge 会在其内置的 EVM 上运行测试：这大大加快了开发速度，让我们不再需要给节点发送交易和挖出区块。除此以外，Forge 还能够使用 Solidity 编写测试！Forge 也内置了一些机制方便我们模拟区块链的各种状态：修改某个账户余额，从其他地址执行合约，把合约部署在任意地址等等。
