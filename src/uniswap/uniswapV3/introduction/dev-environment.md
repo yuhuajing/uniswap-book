@@ -1,14 +1,3 @@
----
-title: "开发环境"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 开发环境
 
 本书中，我们会搭建两个应用：
