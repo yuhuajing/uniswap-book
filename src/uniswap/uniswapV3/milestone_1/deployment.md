@@ -1,19 +1,6 @@
----
-title: "部署合约"
-weight: 6
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 部署
 
-我们的第一版合约已经完成了。现在，让我们来看看如何把它部署在一个本地以太坊网络上，方便我们之后用前端 app 交互。
+我们的第一版合约已经完成了。现在，让我们来看看如何把它部署在一个本地以太坊网络上，方便我们之后用前端 `app` 交互。
 
 ## 选择本地网络
 
@@ -28,12 +15,13 @@ weight: 6
 2. [Hardhat](https://hardhat.org/)，一套智能合约开发环境，除了包含本地网络节点以外还有很多有用的工具
 3. Foundry中的[Anvil](https://github.com/foundry-rs/foundry/tree/master/anvil)
 
-所有这些解决方案都能够满足我们的需求。尽管如此，项目现在都逐渐从 Ganache（最早的解决方案）迁移到 Hardhat（目前使用最广的方案），而 Foundry 也成为开发者的新宠。Foundry 也是上述三个方案中唯一使用 Solidity 来编写测试的框架（其他框架都使用 JavaScript）。除此以外，Foundry 还允许使用 Solidity 来编写部署脚本。因此，由于我们想一直使用 Solidity，我们会使用 Anvil 来运行一个本地区块链，并且使用 Solidity 编写部署脚本。
+所有这些解决方案都能够满足我们的需求。尽管如此，项目现在都逐渐从 Ganache（最早的解决方案）迁移到 Hardhat（目前使用最广的方案），而 Foundry 也成为开发者的新宠。
+
+Foundry 也是上述三个方案中唯一使用 Solidity 来编写测试的框架（其他框架都使用 JavaScript）。除此以外，Foundry 还允许使用 Solidity 来编写部署脚本。因此，由于我们想一直使用 Solidity，我们会使用 Anvil 来运行一个本地区块链，并且使用 Solidity 编写部署脚本。
 
 ## 运行本地区块链
 
 Anvil 不需要进行配置，我们可以直接在命令行运行：
-
 
 ```shell
 $ anvil

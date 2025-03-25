@@ -1,14 +1,3 @@
----
-title: "用户界面"
-weight: 6
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 用户界面
 
 在这个 milestone 中，我们增加了移除池子流动性和收集累计费用的功能。因此，我们需要在用户界面上增加这些改变，允许用户移除流动性。

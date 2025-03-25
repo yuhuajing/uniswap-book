@@ -1,14 +1,3 @@
----
-title: "ERC721 概述"
-weight: 2
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # ERC721 概述
 
 首先，我们先对于 [EIP-721](https://eips.ethereum.org/EIPS/eip-721) 这个定义了 NFT 合约规范的标准进行简介。

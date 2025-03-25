@@ -1,16 +1,3 @@
----
-title: "输出金额计算"
-weight: 2
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 输出金额计算
 
 我们的 Uniswap 数学公式中还缺最后一个组成部分：计算卖出 ETH (即 token $x$ )时获得的资产数量。在前一章中，我们有一个类似的公式计算购买 ETH(购买 token $x$)的场景：

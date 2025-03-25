@@ -1,44 +1,40 @@
----
-title: "第一笔交易"
-weight: 4
-# bookFlatSection: false
-# bookToc: false
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
-
 # 第一笔交易
-
-现在我们已经有了流动性，我们可以进行我们的第一笔交易了！
-
 ## 计算交易数量
-首先，我们需要知道如何计算交易出入的数量。同样，我们在这小节中也会硬编码我们希望交易的 USDC 数额，这里我们选择 42，也即花费 42 USDC 购买 ETH。
+首先，我们需要知道如何计算交易出入的数量。
+同样，我们在这小节中也会硬编码我们希望交易的 `USDC` 数额，这里我们选择  `42 USDC swap  ETH`。
 
-在决定了我们希望投入的资金量之后，我们需要计算我们会获得多少 token。在 Uniswap V2 中，我们会使用当前池子的资产数量来计算，但是在 V3 中我们有 $L$ 和 $\sqrt{P}$，并且我们知道在交易过程中，$L$ 保持不变而只有 $\sqrt{P}$ 发生变化（当在同一区间内进行交易时，V3 的表现和 V2 一致）。我们还知道如下公式：
+在决定了我们希望投入的资金量之后，需要计算我们会获得多少 `ETH token`。
+在 `UniswapV2` 中，我们会使用当前池子的资产数量来计算，
+但是在 V3 中我们有 $L$ 和 $\sqrt{P}$，
+并且我们知道在交易过程中，$L$ 保持不变而只有 $\sqrt{P}$ 发生变化
+（当在同一区间内进行交易时，`V3` 的表现和 `V2` 一致）。我们还知道如下公式：
 
 $$L = \frac{\Delta y}{\Delta \sqrt{P}}$$
 
-并且，在这里我们知道了$\Delta y$。它正是我们希望投入的 42 USDC。因此，我们可以根据公式得出投入的 42 USDC 会对价格造成多少影响：
+并且，在这里我们知道了$\Delta y$。它正是我们希望投入的 `42 USDC`。
+因此，我们可以根据公式得出投入的 `42 USDC` 会对价格造成多少影响：
 
 
 $$\Delta \sqrt{P} = \frac{\Delta y}{L}$$
 
-在 V3 中，我们得到了**我们交易导致的价格变动**（回忆一下，交易使得现价沿着曲线移动）。知道了目标价格(target price)，合约可以计算出投入 token 的数量和输出 token 的数量。
+在 `V3` 中，我们得到了**我们交易导致的价格变动**（回忆一下，交易使得现价沿着曲线移动）。
+知道了目标价格(`target price`)，合约可以计算出投入 `USDC` 的数量和输出 `ETH` 的数量。
+
+注意，$\sqrt{P}$ 用 Q64.96 定点数表示
 
 我们将数字代入上述公式：
 
-$$\Delta \sqrt{P} = \frac{42 \enspace USDC}{1517882343751509868544} = 2192253463713690532467206957$$
+$$\Delta \sqrt{P} = \frac{42 \enspace USDC}{1517882343751509868544} * 2^{96} = 2192253463713690532467206957$$
 
 把差价加到现在的 $\sqrt{P}$，我们就能得到目标价格：
 
+`USDC` 兑换 `ETH` 会减少池子中 `ETH` 的数量，因此 `ETH` 的价格会上涨 
+
+$$\sqrt{P_{target}} - \sqrt{P_{current}} = \Delta \sqrt{P}$$
+
 $$\sqrt{P_{target}} = \sqrt{P_{current}} + \Delta \sqrt{P}$$
 
-$$\sqrt{P_{target}} = 5604469350942327889444743441197$$
+$$\sqrt{P_{target}} = 5602277097478614198912276234240 + 2192253463713690532467206957 = 5604469350942327889444743441197$$
 
 > 在 Python 中进行相应计算:
 > ```python
@@ -53,11 +49,10 @@ $$\sqrt{P_{target}} = 5604469350942327889444743441197$$
 > # New tick: 85184
 > ```
 
-知道了目标价格，我们就能计算出投入 token 的数量和获得 token 的数量：
+知道了目标价格，我们就能计算出投入 `USDC` 的数量和获得 `ETH` 的数量：
 
-
-$$ x = \frac{L(\sqrt{p_b}-\sqrt{p_a})}{\sqrt{p_b}\sqrt{p_a}}$$
-$$ y = L(\sqrt{p_b}-\sqrt{p_a}) $$
+$$\Delta x = \Delta \frac{L}{\sqrt{p}} / 2^{96}  = L * (\frac{1}{\sqrt{p_b}} - \frac{1}{\sqrt{p_c}}) / 2 ^{96} = \frac{L(\sqrt{p_b}-\sqrt{p_c})}{\sqrt{p_b}\sqrt{p_c}} / 2 ^ {96}$$
+$$\Delta y = L(\sqrt{p_b}-\sqrt{p_c}) / 2 ^{96} $$
 
 > 用Python:
 > ```python
@@ -102,12 +97,11 @@ function swap(address recipient)
     ...
 ```
 
-此时，它仅仅接受一个 recipient 参数，即提出 token 的接收者。
+此时，它仅仅接受一个 `recipient` 参数，即提出 `token` 的接收者。
 
-首先，我们需要计算出目标价格和对应 tick，以及 token 的数量。同样，我们将会在这里硬编码我们之前计算出来的值：
+首先，我们需要计算出目标价格和对应 `tick`，以及 `token` 的数量。同样，我们将会在这里硬编码我们之前计算出来的值：
 
 ```solidity
-...
 int24 nextTick = 85184;
 uint160 nextPrice = 5604469350942327889444743441197;
 
@@ -264,8 +258,3 @@ assertEq(
 ```
 
 注意到，在这里交易并没有改变池子流动性——在后面的某个章节，我们会看到它将如何改变
-
-
-## 练习
-
-写一个测试样例，失败并报错 `InsufficientInputAmount`。要记得，这里还有一个隐藏的bug🙂

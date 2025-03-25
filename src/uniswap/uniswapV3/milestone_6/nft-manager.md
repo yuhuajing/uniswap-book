@@ -1,16 +1,3 @@
----
-title: "NFT 管理员合约"
-weight: 3
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # NFT 管理员合约
 
 显然，我们并不会把 NFT 相关的功能添加到池子合约中——我们需要一个另外的合约来把 NFT 和流动性位置合并起来。回忆一下，在我们的实现过程中，我们构建了 `UniswapV3Manager` 来辅助我们与池子合约的交互（使得计算更简单，并能够进行多池子交易）。这个合约向我们展示了一个如何扩展 Uniswap 核心合约的优秀实例。现在，我们将会把这个想法进一步扩展。

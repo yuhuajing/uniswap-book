@@ -1,14 +1,3 @@
----
-title: "工厂合约"
-weight: 2
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 工厂合约
 
 Uniswap 由多个离散的池子合约构成，每个池子负责一对 token 的交易。这看起来会有些问题，因为当我们想要在两个没有池子的 token 之间进行交易时——由于没有赤字，我们无法进行交易。然而，我们仍然可以进行中间交易：第一笔交易把一种 token 转换成另一种有交易对的 token，然后再把这种 token 转换成目标 token。这个路径可以更长并且有更多种的中间 token。然而，手动进行这一个操作会非常繁琐，幸运的是，我们可以在我们的智能合约中实现这个功能，让其更简便。

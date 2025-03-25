@@ -1,16 +1,3 @@
----
-title: "Tick Bitmap Index"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # Tick Bitmap Index
 (译者注：由于 bitmap 也是数据结构中的常见名词，所以在此不做翻译)
 

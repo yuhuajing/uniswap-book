@@ -1,14 +1,3 @@
----
-title: "多池子交易"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 多池子交易
 
 我们现在进入这个 milestone 的核心——在我们的合约中实现多池子交易。我们将不会涉及到池子合约，因为它是一个核心合约，仅包含核心功能。多池子交易是一个使用上的特性，所以我们会在管理员合约和报价合约中对其进行实现。

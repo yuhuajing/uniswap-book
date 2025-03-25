@@ -1,14 +1,3 @@
----
-title: "简介"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 费率和价格预言机
 
 在这个 milestone 中，我们会在我们的实现中增加两个新的功能。它们的共同点是：都运行在我们已经搭建好的系统之上——这也是我们为什么直到这里才实现它们。然而，它们并不是同等重要的。

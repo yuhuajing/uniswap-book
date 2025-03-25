@@ -1,16 +1,3 @@
----
-title: "用户界面"
-weight: 8
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 用户界面
 
 现在，我们可以针对我们在这个 milestone 中做出的改变来更新我们的UI了。我们会增加两个新的特性：

@@ -1,16 +1,3 @@
----
-title: "滑点保护"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 滑点保护
 
 滑点(slippage)是去中心化交易所中一个很重要的点。滑点的意思是指你在你在交易之前看到的价格与交易实际执行的价格之间的价差。这个价差主要是由于在你发出这笔交易和这个交易被打包进区块上链之间有一个延迟（可能短可能长，取决于网络拥堵程度和花费的 gas）。更具体一点，区块链的状态随着每个区块都在发生变化，没有办法保证你的交易被打包在哪个特定的区块中。

@@ -1,14 +1,3 @@
----
-title: "用户界面"
-weight: 5
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 用户界面
 
 在引入交易路径后，我们可以大大简化我们 web 应用的内部逻辑。首先，每一个交易都使用路径，因为路径并不一定要有多个池子；其次，现在更容易改变交易方向了：我们只需要把路径翻转即可；最后，由于通过 `CREATE2` 和盐值能够确定唯一的合约地址，我们不再需要存储合约地址以及考虑 token 顺序了。

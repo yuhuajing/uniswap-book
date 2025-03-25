@@ -1,16 +1,3 @@
----
-title: "通用mint"
-weight: 5
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 通用 mint
 
 现在，我们可以更新 `mint` 函数来直接在 Solidity 中进行计算而不需要手动计算并硬编码了。

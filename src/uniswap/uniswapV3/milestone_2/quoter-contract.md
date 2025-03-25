@@ -1,14 +1,3 @@
----
-title: "报价合约"
-weight: 7
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 报价合约
 
 为了让我们的池子合约能够集成到前端，我们需要一种方式能够在交易之前就计算出对应的数量。用户会输入它们希望卖出的 token 数量，然后就能计算并且展示出它们会获得的 token 数量。我们将通过报价合约来实现这一功能。

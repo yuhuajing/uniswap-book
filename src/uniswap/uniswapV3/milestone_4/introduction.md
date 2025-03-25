@@ -1,14 +1,3 @@
----
-title: "简介"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 多池子交易
 
 在实现了跨 tick 交易之后，我们已经十分接近真实的 Uniswap V3 交易了。我们的实现中一个非常重要的限制在于，仅仅允许在同一个池子里的交易——如果某一对 token 没有池子，我们就不能在这两个 token 之间进行交易。在 Uniswap 中并不是如此，因为它允许多池子交易。在这章中，我们将在我们的实现中添加多池子交易的功能。

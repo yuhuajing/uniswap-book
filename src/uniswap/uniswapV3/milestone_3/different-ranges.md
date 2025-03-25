@@ -1,16 +1,3 @@
----
-title: "不同价格区间"
-weight: 2
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 不同价格区间
 
 在我们之前的实现中，我们仅仅创建包含现价的价格区间：

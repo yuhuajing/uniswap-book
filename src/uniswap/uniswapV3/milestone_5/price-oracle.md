@@ -1,16 +1,3 @@
----
-title: "价格预言机"
-weight: 5
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 价格预言机
 
 我们要在我们的 DEX 中添加的最后一个机制就是*价格预言机*。即使它不是一个 DEX 必备的部分（有很多 DEX 没有价格预言机），它仍然是 Uniswap 的一个很重要的特性，并且也非常有趣。

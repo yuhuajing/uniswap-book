@@ -1,16 +1,3 @@
----
-title: "协议费率"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 协议费率
 
 在实现 Uniswap 的过程中，你可能会有疑问：“Uniswap 如何盈利？”。事实上，它并不盈利（至少到 2022 年 9 月为止还没有）。

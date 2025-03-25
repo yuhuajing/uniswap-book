@@ -1,14 +1,3 @@
----
-title: "交易路径"
-weight: 3
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 交易路径
 
 假设我们只有以下几个池子：WETH/USDC, USDC/USDT, WBTC/USDT。如果我们想要把 WETH 换成 WBTC，我们需要进行多步交换（WETH→USDC→USDT→WBTC），因为没有直接的 WETH/WBTC 池子。我们可以手动进行这一步，或者我们可以改进我们的合约来支持这样链式的，或者叫多池子的交易。当然，我们要选择后者！

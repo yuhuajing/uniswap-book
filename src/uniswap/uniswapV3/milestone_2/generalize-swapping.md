@@ -1,16 +1,3 @@
----
-title: "通用swap"
-weight: 6
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 通用 swap
 
 本节将会是这个 milestone 中最难的一个部分。在更新代码之前，我们首先需要知道 Uniswap V3 中的 swap 是如何工作的。

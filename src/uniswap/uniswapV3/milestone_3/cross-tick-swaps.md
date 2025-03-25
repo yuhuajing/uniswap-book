@@ -1,16 +1,3 @@
----
-title: "跨tick交易"
-weight: 3
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 跨 tick 交易
 
 跨 tick 交易应该是 Uniswap V3 中最难的功能之一了。幸运地是，我们已经实现了我们需要完成跨 tick 交易的绝大部分内容。在实现它之前，让我们来简单看看它是怎么工作的：

@@ -1,16 +1,3 @@
----
-title: "流动性计算"
-weight: 5
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 流动性计算
 
 在 Uniswap V3 的所有数学公式中，只剩流动性计算我们还没在 Solidity 里面实现。在 Python 脚本中我们有这两个函数：

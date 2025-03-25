@@ -1,14 +1,3 @@
----
-title: "简介"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 第二笔交易
 
 OK，现在才是真正的开始。到目前为止，我们的实现看起来过于静态。我们手动计算了所有参数，硬编码了各种数量，来让学习曲线不那么陡峭；现在我们准备要让它真正地自动化工作了。我们将会实现第二笔交易，这次的交易是相反的方向：卖出 ETH 来获得 USDC。为了达到这个目的，我们需要大幅度改进我们目前的合约：

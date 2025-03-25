@@ -1,13 +1,3 @@
----
-title: "中英名词对照"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
 
 | 中文     | 英文简称 | 全称 |
 | ----------- | ----------- | ----------- |

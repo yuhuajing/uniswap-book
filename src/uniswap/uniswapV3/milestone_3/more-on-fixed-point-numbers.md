@@ -1,16 +1,3 @@
----
-title: "关于定点数的拓展"
-weight: 6
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 关于定点数的拓展
 
 在这个额外章节，我们将会展示在 Solidity 中如何将价格转换成 tick。我们不会在主要合约中实现这部分，但是在测试合约中有这样的函数会很有帮助，这样我们就不需要把 tick 硬编码进代码，并且可以写类似 `tick(5000)` 这样的代码——来使得代码的可读性更强，因为价格比 tick 对于读者更直观。

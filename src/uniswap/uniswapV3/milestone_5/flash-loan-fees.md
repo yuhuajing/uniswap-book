@@ -1,14 +1,3 @@
----
-title: "闪电贷费率"
-weight: 3
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 闪电贷费率
 
 在前一个 milestone 中，我们实现了闪电贷，并且它是免费的。然而，Uniswap 会对闪电贷收取一定的交易费用，我们将会在这里把它加入到我们的实现中：闪电贷返还的数量必须包含一个费用。

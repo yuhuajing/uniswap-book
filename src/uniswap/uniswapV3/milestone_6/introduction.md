@@ -1,16 +1,3 @@
----
-title: "简介"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # NFT Positions
 
 这是本书的一个锦上添花的部分。在这个 milestone 中，我们将学习如何扩展 Uniswap 合约，以及将它集成到第三方的协议中。能够实现这样的功能，正是由于我们把仅有关键函数的核心合约与外围合约分离开，让我们能够不需要在核心协议上添加功能就能集成到其他合约。

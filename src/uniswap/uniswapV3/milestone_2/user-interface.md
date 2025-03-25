@@ -1,14 +1,3 @@
----
-title: "用户界面"
-weight: 8
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 用户界面
 
 现在，我们可以让我们的 web 应用看起来更像一个真正的 DEX 了。我们可以移除那些硬编码的数额，并且允许用户输入任意的数量。同样，我们还可以让用户在任意一个方向交易，所以我们需要一个按钮来改变交易方向。在更新之后，swap 的表单长这样：

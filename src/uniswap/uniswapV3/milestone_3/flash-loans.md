@@ -1,14 +1,3 @@
----
-title: "闪电贷"
-weight: 7
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 ## 闪电贷
 
 Uniswap V2 和 V3 都实现了闪电贷：不受限且无抵押的借贷，但是必须在同一笔交易中还款。池子可以给予用户请求的任意数量的 token，但是在调用结束时，这笔数量必须被还回，并收取一小笔费用。

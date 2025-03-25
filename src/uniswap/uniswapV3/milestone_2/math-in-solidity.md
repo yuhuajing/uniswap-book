@@ -1,16 +1,3 @@
----
-title: "Solidity中的数学运算"
-weight: 3
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # Solidity中的数学运算
 
 由于 Solidity 不支持浮点数，在其中的运算会有些复杂。Solidity 拥有整数(integer)和无符号整数(unsigned integer)类型，这并不足够让我们实现复杂的数学运算。

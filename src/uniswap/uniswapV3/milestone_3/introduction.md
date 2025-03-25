@@ -1,14 +1,3 @@
----
-title: "简介"
-weight: 1
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
 # 跨tick交易
 
 我们现在已经完成了 Uniswap V3 实现的很大一部分，并且已经很接近原版了！然而，我们的实现仅仅支持在同一个价格区间内的交易——这也是我们在这一个 milestone 中来改进的点。

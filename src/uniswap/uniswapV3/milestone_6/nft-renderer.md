@@ -1,15 +1,3 @@
----
-title: "NFT 渲染器"
-weight: 4
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-<译者注：在本小节中用词为 render，我们将统一把格式化数据过程翻译为渲染，防止分歧>
-
 # NFT 渲染器
 
 现在，我们需要构建一个 NFT 渲染器：一个处理 NFT 管理员合约中调用 `tokenURI` 的库。它会对于每个已经铸造的 token 渲染 JSON 元数据和一个 SVG。正如我们之前所说，我们需要使用 data URI 格式，它要求 base64 编码格式——这意味着我们需要在 Solidity 中的 base64 编码器。但首先，让我们先来看一下我们的 token 长什么样。

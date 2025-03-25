@@ -1,16 +1,3 @@
----
-title: "交易费率"
-weight: 2
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # 交易费率
 
 正如我在简介中所说，交易费率是 Uniswap 的一个核心机制。LP 需要从提供流动性中获得收益，否则它们还不如把这笔钱用来做别的。为了激励它们，每一笔交易中交易员都会付出一小笔费用。这些费用将会按提供的流动性占比分配给所有的 LP。

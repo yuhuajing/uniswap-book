@@ -1,16 +1,3 @@
----
-title: "Tick 舍入"
-weight: 6
-# bookFlatSection: false
-# bookToc: true
-# bookHidden: false
-# bookCollapseSection: false
-# bookComments: false
-# bookSearchExclude: false
----
-
-{{< katex display >}} {{</ katex >}}
-
 # Tick 舍入
 
 我们来看一下，为了支持不同的 tick 间隔，我们还需进行哪些改动。
