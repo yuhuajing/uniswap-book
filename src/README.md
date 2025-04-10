@@ -2,7 +2,7 @@
 
 ## Useful Links
 1. This book is hosted on GitHub: <https://github.com/yuhuajing/uniswap-book>
-2. Page in <>
+2. Page in <https://yuhuajing.github.io/uniswap-book/>
 
 ## Table of Contents
 - [背景]()
