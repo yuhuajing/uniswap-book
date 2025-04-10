@@ -1,0 +1,17 @@
+[book]
+authors = ["HuajingYu"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Web3 Uniswap Development Book"
+description = "A book that learns Uniswap DEX programs."
+
+[output.html]
+curly-quotes = true
+git-repository-url = "https://github.com/yuhuajing/uniswap-book"
+git-repository-icon = "fa-github"
+#edit-url-template = "https://github.com/yuhuajing/solidity-book/edit/main/{path}"
+cname = "web3-uniswap-dex-programs-book.com"
+
+[preprocessor.katex]
+after = ["links"]
