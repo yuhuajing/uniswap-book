@@ -1,0 +1,61 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"lib/Math.sol": "Math"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"lib/FixedPoint96.sol": {
+			"keccak256": "0x9f249b890f1a47e28cbb02df5967337dd39ac7284e3fcbe53ee91245070eedbc",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://4fdb1f47740430cc2bfa0c8e5a44c239fffea5fb8eaa9fd9ca2ff5c52dd6c769",
+				"dweb:/ipfs/QmTYwvo9aSXQLmaiLBhde312dpahTTAzVRzwJdeFY7nAuF"
+			]
+		},
+		"lib/Math.sol": {
+			"keccak256": "0x5ef1fff1f910364c4070d2279134d6929441c4ee9b1f0ccb0397e70a49e5465f",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://1059d70e95a59409192423722961461efc0ba4dbffb20b89b01ed5e19bd9d4b2",
+				"dweb:/ipfs/Qmc5JgfGdun9YioLnTnde4KthaGazC3qd6MBZSnPGemKZn"
+			]
+		},
+		"lib/PRBMath.sol": {
+			"keccak256": "0xfbc6ad00d7bcc816a632a1804c9ca0b8208da2f92738ebaba9d2690cccf5bacb",
+			"license": "Unlicense",
+			"urls": [
+				"bzz-raw://f3a71e1ef13c8446a14775a7782b85d8cb29a49ad1d46b8897297248dbcc8140",
+				"dweb:/ipfs/QmfFMGPrfdiNviEXKWiMvfK4587VbKyfdg6VDUXw4wKxme"
+			]
+		}
+	},
+	"version": 1
+}

@@ -1,12 +1,14 @@
 # 通用 swap
+一笔交易可以看作是满足一个订单：
 
-本节将会是这个 milestone 中最难的一个部分。在更新代码之前，我们首先需要知道 `UniswapV3` 中的 `swap` 是如何工作的。
+一个用户提交了一个订单，需要从池子中购买一定数量的某种 `token`。
 
-我们可以把一笔交易看作是满足一个订单：一个用户提交了一个订单，需要从池子中购买一定数量的某种 `token`。
-池子会使用可用的流动性来将投入的 `token` 数量“转换”成输出的 `token` 数量。
-如果在当前价格区间中没有足够的流动性，它将会尝试在其他价格区间中寻找流动性（使用我们前一节实现的函数）。
+池子会使用可用的流动性来将投入的 `token0` 数量“转换”成输出的 `token1` 数量。
+
+如果在当前价格区间中没有足够的流动性，它将会尝试在其他价格区间中寻找流动性。
 
 现在，我们要实现 `swap` 函数内部的逻辑，
+
 但仍然保证交易可以在当前价格区间内完成——跨 `tick` 的交易将会在下一个 `milestone` 中实现。
 
 ```solidity
@@ -20,18 +22,16 @@ function swap(
 ```
 
 在 `swap` 函数中，我们新增了两个参数：`zeroForOne` 和 `amountSpecified`。
+
 `zeroForOne` 是用来控制交易方向的 `flag`：
 
-当设置为 `true`，是用 `token0` 兑换 `token1`；
+当设置为 `true`，表示卖出 `Token0`， 用 `token0` 兑换 `token1`；
 
 `false` 则相反。
 
-例如，如果 `token0` 是 `ETH`，`token1` 是 `USDC`，
-将 `zeroForOne` 设置为 `true` 意味着用 `ETH` 购买 `USDC`,用户转入 `ETH`, 池子兑换 `USDC` 给用户，此时池子内部 `ETH/USDC` 的价格上涨
-
 `amountSpecified` 是用户希望兑换到的 `token` 数量。
 
-## 填满订单
+## 完成兑换订单
 
 由于在 `UniswapV3` 中，流动性存储在不同的价格区间中，池子合约需要找到“填满当前订单”所需要的所有流动性。
 这个操作是通过沿着某个方向遍历所有初始化的 `tick` 来实现的。
@@ -57,91 +57,73 @@ struct StepState {
 
 `SwapState` 维护了当前 swap 的状态。
 
-`amoutSpecifiedRemaining` 跟踪了还需要从池子中获取的 `token` 数量：当这个数量为 0 时，这笔订单就被填满了。
-
-`amountCalculated` 是由合约计算出的输出数量。
-
-`sqrtPriceX96` 和 `tick` 是交易结束后的价格和 `tick`。
-
-`StepState` 维护了当前交易“一步”的状态。这个结构体跟踪“填满订单”过程中**一个循环**的状态。
+- `amoutSpecifiedRemaining` 跟踪了还需要从池子中获取的 `token` 数量：当这个数量为 0 时，这笔订单就被填满了。
+- `amountCalculated` 是由合约计算出的输出数量。
+- `sqrtPriceX96` 和 `tick` 是交易结束后的价格和 `tick`。
+- `StepState` 维护了当前交易“一步”的状态。这个结构体跟踪“填满订单”过程中**一个循环**的状态。
 
 `sqrtPriceStartX96` 跟踪循环开始时的价格。
-
-`nextTick` 是能够为交易提供流动性的下一个已初始化的`tick`，
-
-`sqrtPriceNextX96` 是下一个 `tick` 的价格。
-
-`amountIn` 和 `amountOut` 是当前循环中流动性能够提供的数量。
+- `nextTick` 是能够为交易提供流动性的下一个已初始化的`tick`， 
+- `sqrtPriceNextX96` 是下一个 `tick` 的价格。
+- `amountIn` 和 `amountOut` 是当前循环中流动性能够提供的数量。
 
 > 在我们实现跨 tick 的交易后（也即不发生在一个价格区间中的交易），关于循环方面会有更清晰的了解。
 
 ```solidity
-// src/UniswapV3Pool.sol
+    function swap(
+        address recipient,
+        bool zeroForOne,
+        uint256 amountSpecified,
+        bytes calldata data
+    ) public returns (int256 amount0, int256 amount1) {
+        Slot0 memory slot0_ = slot0;
 
-function swap(...) {
-    Slot0 memory slot0_ = slot0;
-
-    SwapState memory state = SwapState({
-        amountSpecifiedRemaining: amountSpecified,
-        amountCalculated: 0,
-        sqrtPriceX96: slot0_.sqrtPriceX96,
-        tick: slot0_.tick
-    });
-    ...
+        SwapState memory state = SwapState({
+            amountSpecifiedRemaining: amountSpecified,
+            amountCalculated: 0,
+            sqrtPriceX96: slot0_.sqrtPriceX96,
+            tick: slot0_.tick
+        });
 ```
 
-在填满一个订单之前，我们首先初始化 `SwapState` 的实例。我们将会循环直到 `amoutSpecified` 变成0，也即池子拥有足够的流动性来买用户的 `amountSpecified` 数量的token。
+在填满一个订单之前，我们首先初始化 `SwapState` 的实例。
+
+我们将会循环直到 `amoutSpecified == 0`，也即池子拥有足够的流动性来买用户的 `amountSpecified` 数量的token。
 
 ```solidity
-...
-while (state.amountSpecifiedRemaining > 0) {
-    StepState memory step;
+        while (state.amountSpecifiedRemaining > 0) {
+            StepState memory step;
 
-    step.sqrtPriceStartX96 = state.sqrtPriceX96;
+            step.sqrtPriceStartX96 = state.sqrtPriceX96;
 
-    (step.nextTick, ) = tickBitmap.nextInitializedTickWithinOneWord(
-        state.tick,
-        1,
-        zeroForOne
-    );
+            (step.nextTick, ) = tickBitmap.nextInitializedTickWithinOneWord(
+                state.tick,
+                1,
+                zeroForOne
+            );
 
-    step.sqrtPriceNextX96 = TickMath.getSqrtRatioAtTick(step.nextTick);
+            step.sqrtPriceNextX96 = TickMath.getSqrtRatioAtTick(step.nextTick);
+
+            (state.sqrtPriceX96, step.amountIn, step.amountOut) = SwapMath
+                .computeSwapStep(
+                    step.sqrtPriceStartX96,
+                    step.sqrtPriceNextX96,
+                    liquidity,
+                    state.amountSpecifiedRemaining
+                );
+
+            state.amountSpecifiedRemaining -= step.amountIn;
+            state.amountCalculated += step.amountOut;
+            state.tick = TickMath.getTickAtSqrtRatio(state.sqrtPriceX96);
+        }
 ```
 
-在循环中，我们设置一个价格区间为这笔交易提供流动性的价格区间。
-这个区间是从 `state.sqrtPriceX96` 到 `step.sqrtPriceNextX96`，
-后者是下一个初始化的 `tick` 对应的价格（从上一章实现的 `nextInitializedTickWithinOneWord` 中获取）。
+在循环中，每次为 swap 交易设置新的价格区间：
 
-```solidity
-(state.sqrtPriceX96, step.amountIn, step.amountOut) = SwapMath
-    .computeSwapStep(
-        state.sqrtPriceX96,
-        step.sqrtPriceNextX96,
-        liquidity,
-        state.amountSpecifiedRemaining
-    );
-```
+区间是从局部的全部变量 `state.sqrtPriceX96` 到根据下一个存在流动性的 `Tick` 计算出的 `step.sqrtPriceNextX96`，
 
-接下来，我们计算当前价格区间能够提供的流动性的数量，以及交易达到的目标价格。
-
-```solidity
-    state.amountSpecifiedRemaining -= step.amountIn;
-    state.amountCalculated += step.amountOut;
-    state.tick = TickMath.getTickAtSqrtRatio(state.sqrtPriceX96);
-}
-```
-
-循环中的最后一步就是更新 `SwapState`。
-
-`step.amountIn` 是这个价格区间可以从用户手中买走的 `token` 数量了；
-
-`step.amountOut` 是相应的池子卖给用户的数量。
-
-`state.sqrtPriceX96` 是交易结束后的现价（因为交易会改变价格）。
 
 ## SwapMath 合约
-
-接下来，让我们更深入研究一下 `SwapMath.computeSwapStep`：
 
 ```solidity
 // src/lib/SwapMath.sol
@@ -162,12 +144,15 @@ function computeSwapStep(
     ...
 ```
 
-这是整个 `swap` 的核心逻辑所在。
+这是整个 `swap` 的核心逻辑所在:
+
 这个函数计算了一个价格区间内部的交易数量以及对应的流动性。
 
 它的返回值是：新的现价、输入 `token` 数量、输出 `token` 数量。
+
 尽管输入 `token` 数量是由用户提供的，
-我们仍然需要进行计算在对于 `computeSwapStep` 的一次调用中可以处理多少用户提供的 `token`。
+
+仍然需要进行计算在对于 `computeSwapStep` 的一次调用中可以处理多少用户提供的 `token`。
 
 ```solidity
 bool zeroForOne = sqrtPriceCurrentX96 >= sqrtPriceTargetX96;
@@ -205,9 +190,8 @@ if (!zeroForOne) {
 
 这就是 `computeSwapStep` 的全部！
 
-## 通过交易数量获取价格
-
-接下来我们来看 `Math.getNextSqrtPriceFromInput` 函数——这个函数根据现在的 $\sqrt{P}$、流动性、和输入数量，计算出交易后新的 $\sqrt{P}$。
+## 通过数量获取价格
+根据现在的 $\sqrt{P_c}$、流动性、和输入数量，计算出交易后新的 $\sqrt{P_t}$。
 
 一个好消息是我们已经知道了相关的公式。回忆一下，我们之前在 Python 中计算 `price_next`
 
@@ -293,58 +277,52 @@ function getNextSqrtPriceFromAmount1RoundingDown(
 
 ## 完成 swap
 
-现在，让我们回到 `swap` 函数并且完成它。
+到目前为止，已经能够沿着下一个初始化过的tick进行循环;
+填满用户指定的 `amoutSpecified`、计算输入和输出数量，
+并且找到新的价格和 tick。
 
-到目前为止，我们已经能够沿着下一个初始化过的tick进行循环、填满用户指定的 `amoutSpecified`、计算输入和输出数量，并且找到新的价格和 tick。由于在本章节中我们只实现在一个价格区间内的交易，这些功能就已经足够了。我们现在只需要去更新合约状态、将 token 发送给用户，并从用户处获得 token。
+只需要去更新合约状态、将 token 发送给用户，并从用户处获得 token。
 
+设置新的价格和 tick:
 ```solidity
 if (state.tick != slot0_.tick) {
     (slot0.sqrtPriceX96, slot0.tick) = (state.sqrtPriceX96, state.tick);
 }
 ```
-
-首先，我们设置新的价格和 tick。由于这个操作需要对合约的存储进行写操作，我们仅仅会在新的 tick 不同的时候进行更新，来节省 gas。
-
-```solidity
-(amount0, amount1) = zeroForOne
-    ? (
-        int256(amountSpecified - state.amountSpecifiedRemaining),
-        -int256(state.amountCalculated)
-    )
-    : (
-        -int256(state.amountCalculated),
-        int256(amountSpecified - state.amountSpecifiedRemaining)
-    );
-```
-接下来，我们根据交易的方向来获得循环中计算出的对应数量。
-
+根据交易方向与用户交换 token
 
 ```solidity
-if (zeroForOne) {
-    IERC20(token1).transfer(recipient, uint256(-amount1));
+        (amount0, amount1) = zeroForOne
+            ? (
+                int256(amountSpecified - state.amountSpecifiedRemaining),
+                -int256(state.amountCalculated)
+            )
+            : (
+                -int256(state.amountCalculated),
+                int256(amountSpecified - state.amountSpecifiedRemaining)
+            );
 
-    uint256 balance0Before = balance0();
-    IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(
-        amount0,
-        amount1,
-        data
-    );
-    if (balance0Before + uint256(amount0) > balance0())
-        revert InsufficientInputAmount();
-} else {
-    IERC20(token0).transfer(recipient, uint256(-amount0));
+        if (zeroForOne) {
+            ERC20(token1).transfer(recipient, uint256(-amount1));
 
-    uint256 balance1Before = balance1();
-    IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(
-        amount0,
-        amount1,
-        data
-    );
-    if (balance1Before + uint256(amount1) > balance1())
-        revert InsufficientInputAmount();
-}
+            uint256 balance0Before = balance0();
+            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(
+                amount0,
+                amount1,
+                data
+            );
+            if (balance0Before + uint256(amount0) > balance0())
+                revert InsufficientInputAmount();
+        } else {
+            ERC20(token0).transfer(recipient, uint256(-amount0));
+
+            uint256 balance1Before = balance1();
+            IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(
+                amount0,
+                amount1,
+                data
+            );
+            if (balance1Before + uint256(amount1) > balance1())
+                revert InsufficientInputAmount();
+        }
 ```
-
-接下来，我们根据交易方向与用户交换 token。这个部分和我们在 milestone 1 中实现的部分一样，除了要考虑交易方向之外。
-
-现在 Swap 已经完成了！

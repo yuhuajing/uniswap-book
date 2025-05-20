@@ -1,0 +1,598 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "token0_",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "token1_",
+						"type": "address"
+					},
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceX96",
+						"type": "uint160"
+					},
+					{
+						"internalType": "int24",
+						"name": "tick",
+						"type": "int24"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "InsufficientInputAmount",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidPriceLimit",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "InvalidTickRange",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotEnoughLiquidity",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "prod1",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "denominator",
+						"type": "uint256"
+					}
+				],
+				"name": "PRBMath__MulDivOverflow",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ZeroLiquidity",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "recipient",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount0",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount1",
+						"type": "uint256"
+					}
+				],
+				"name": "Flash",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "int24",
+						"name": "tickLower",
+						"type": "int24"
+					},
+					{
+						"indexed": true,
+						"internalType": "int24",
+						"name": "tickUpper",
+						"type": "int24"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint128",
+						"name": "amount",
+						"type": "uint128"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount0",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "amount1",
+						"type": "uint256"
+					}
+				],
+				"name": "Mint",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "recipient",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "int256",
+						"name": "amount0",
+						"type": "int256"
+					},
+					{
+						"indexed": false,
+						"internalType": "int256",
+						"name": "amount1",
+						"type": "int256"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint160",
+						"name": "sqrtPriceX96",
+						"type": "uint160"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint128",
+						"name": "liquidity",
+						"type": "uint128"
+					},
+					{
+						"indexed": false,
+						"internalType": "int24",
+						"name": "tick",
+						"type": "int24"
+					}
+				],
+				"name": "Swap",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount0",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount1",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "flash",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "liquidity",
+				"outputs": [
+					{
+						"internalType": "uint128",
+						"name": "",
+						"type": "uint128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "owner",
+						"type": "address"
+					},
+					{
+						"internalType": "int24",
+						"name": "lowerTick",
+						"type": "int24"
+					},
+					{
+						"internalType": "int24",
+						"name": "upperTick",
+						"type": "int24"
+					},
+					{
+						"internalType": "uint128",
+						"name": "amount",
+						"type": "uint128"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "mint",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount0",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount1",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "bytes32",
+						"name": "",
+						"type": "bytes32"
+					}
+				],
+				"name": "positions",
+				"outputs": [
+					{
+						"internalType": "uint128",
+						"name": "liquidity",
+						"type": "uint128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "slot0",
+				"outputs": [
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceX96",
+						"type": "uint160"
+					},
+					{
+						"internalType": "int24",
+						"name": "tick",
+						"type": "int24"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "recipient",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "zeroForOne",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountSpecified",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceLimitX96",
+						"type": "uint160"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "swap",
+				"outputs": [
+					{
+						"internalType": "int256",
+						"name": "amount0",
+						"type": "int256"
+					},
+					{
+						"internalType": "int256",
+						"name": "amount1",
+						"type": "int256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "int16",
+						"name": "",
+						"type": "int16"
+					}
+				],
+				"name": "tickBitmap",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "int24",
+						"name": "",
+						"type": "int24"
+					}
+				],
+				"name": "ticks",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "initialized",
+						"type": "bool"
+					},
+					{
+						"internalType": "uint128",
+						"name": "liquidityGross",
+						"type": "uint128"
+					},
+					{
+						"internalType": "int128",
+						"name": "liquidityNet",
+						"type": "int128"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "token0",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "token1",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"errors": {
+				"PRBMath__MulDivOverflow(uint256,uint256)": [
+					{
+						"notice": "Emitted when the result overflows uint256."
+					}
+				]
+			},
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"UniswapV3Pool.sol": "UniswapV3Pool"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"UniswapV3Pool.sol": {
+			"keccak256": "0x17a156834965d740bc57332fb1ef2a7453d63c4b68d8fe57779410e7f30f4d01",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://ef8990377e88ad89dd297f293c7d32d9005935a684c30be83272658b1d594be3",
+				"dweb:/ipfs/Qmf2oZYZq3cxPYgpCQYdGAPcgRwDR64DqUdgvvmRg6EUTK"
+			]
+		},
+		"interfaces/IUniswapV3FlashCallback.sol": {
+			"keccak256": "0xd8f4666d4e77ccd7438e75394b9d11db0bbd15563f357468df54b8da43762807",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://e247170849d1d7915599daddc177053ca9cc1739c03c6bd5c6c4ed974366c3f1",
+				"dweb:/ipfs/QmYgKafhQrVVqBfv4MbJectT79UdCXZrDaKoPYX8dwt6WC"
+			]
+		},
+		"interfaces/IUniswapV3MintCallback.sol": {
+			"keccak256": "0x57b57f57e55df7e221f78d637b66fd20bcce74b75f8582ade40a9d1ab850c537",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://9ac7bcdafd07a757d4247324971855c6de3600124a1513b4a0c14a536632d8e9",
+				"dweb:/ipfs/QmPX87fV1eGufR5t9CBMUMZUXZfXsBJkMTaZbK3J8YGbuu"
+			]
+		},
+		"interfaces/IUniswapV3Pool.sol": {
+			"keccak256": "0xadf611777183da066c11c097e8db6a2eacb0ef8a409c5112d6076836bc1200ee",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://0321871fa43a8519802d59b4e883a775b620152fd7d65f856ba0aded30d75b4a",
+				"dweb:/ipfs/QmSuEzn35YFpGgTdw17qKBepn2yvS2wUYtzyhutdTKcorj"
+			]
+		},
+		"interfaces/IUniswapV3SwapCallback.sol": {
+			"keccak256": "0x571007142d75fbbe401d96fbefd612dabd054bcd9a0e79ff88d963b74379f4cc",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://2deefcbb0dc57cbcb3e6c4966c33d0caca2376dd0beaed94f20288dd4862d040",
+				"dweb:/ipfs/QmYFDVSFTm3eBq515z3N6d7wqsE7vKwdpFX3as5Umadds6"
+			]
+		},
+		"lib/BitMath.sol": {
+			"keccak256": "0x3494469e9159272b661e57c5a15a0513e99ae9e9cf0ecfc6d3a4fa6002874482",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://ea3355f73915fb48a597944581ee6ff4736c04e7a3ec26b20001bfecd0178c7d",
+				"dweb:/ipfs/QmVkpV8dsWGuJLFv1GSCNsNBmVJ9DqscW8p2VkZe7suQQV"
+			]
+		},
+		"lib/FixedPoint96.sol": {
+			"keccak256": "0x9f249b890f1a47e28cbb02df5967337dd39ac7284e3fcbe53ee91245070eedbc",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://4fdb1f47740430cc2bfa0c8e5a44c239fffea5fb8eaa9fd9ca2ff5c52dd6c769",
+				"dweb:/ipfs/QmTYwvo9aSXQLmaiLBhde312dpahTTAzVRzwJdeFY7nAuF"
+			]
+		},
+		"lib/LiquidityMath.sol": {
+			"keccak256": "0xc0376374e0dc7c3825a0e9827e5cae44b39143eae98cdabdff5e81f7c9dec1e7",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://dc9ab13f766ee4dfa419b07cf3dabf99c5fe2479ba56385cc49fcc9232cd1cca",
+				"dweb:/ipfs/Qmd91f3UYWTG1sP7zkfqvNdfBAyHMTqnEdknQug4QNyLXx"
+			]
+		},
+		"lib/Math.sol": {
+			"keccak256": "0x5ef1fff1f910364c4070d2279134d6929441c4ee9b1f0ccb0397e70a49e5465f",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://1059d70e95a59409192423722961461efc0ba4dbffb20b89b01ed5e19bd9d4b2",
+				"dweb:/ipfs/Qmc5JgfGdun9YioLnTnde4KthaGazC3qd6MBZSnPGemKZn"
+			]
+		},
+		"lib/PRBMath.sol": {
+			"keccak256": "0xfbc6ad00d7bcc816a632a1804c9ca0b8208da2f92738ebaba9d2690cccf5bacb",
+			"license": "Unlicense",
+			"urls": [
+				"bzz-raw://f3a71e1ef13c8446a14775a7782b85d8cb29a49ad1d46b8897297248dbcc8140",
+				"dweb:/ipfs/QmfFMGPrfdiNviEXKWiMvfK4587VbKyfdg6VDUXw4wKxme"
+			]
+		},
+		"lib/Position.sol": {
+			"keccak256": "0x99f5ecdb3c823152bef8b4d3b6e246428b33677a1420fd79b67ef696602d3303",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://c26e8da43b39e2daf492a305deaed5ea8aeb49287be2dab84906649a75242f46",
+				"dweb:/ipfs/QmTC5g937yjrrQbQSbgEUNCJm3MPgNpyHRRFRm3t1jz3BT"
+			]
+		},
+		"lib/SwapMath.sol": {
+			"keccak256": "0x4dad6f609160efa535b306bdb4fb2d3a0219b2fc846c1d132ab56d67495d74a0",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://ac60fef85b972abcb03d83cd9eee46ed085d488a9a1717f538596d237be0ce74",
+				"dweb:/ipfs/QmVGJ7CJBPM2SBj964Ab8DVEae4pNNdzNccUdx9XSrrs8H"
+			]
+		},
+		"lib/Tick.sol": {
+			"keccak256": "0x92dc174a60e540eebfbcebe35b506b07e46b01317bd4a7f21fe6123cd6c1fb4c",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://2b49fdc583c6e63f99b30263fc45933aab83001b21166ccb29652a3ea3bf5f3b",
+				"dweb:/ipfs/QmbgDqLcNWUEprEqXfNLvHSZD7KdwGn6PksSedX5r3MYML"
+			]
+		},
+		"lib/TickBitmap.sol": {
+			"keccak256": "0x363c82a7e9f18b7478d81909b8526fd9b10e596ccaff5ef24eb9da25747b64df",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://48ce2df97fbd9071ba09d8ba9d5683b09bb40aabe1c237e96f46c942ef09c909",
+				"dweb:/ipfs/QmSN2jKGqHvJZBWnCdU6fRhSzragTwGkrmsERWZyiFP8H5"
+			]
+		},
+		"lib/TickMath.sol": {
+			"keccak256": "0x2337e864482f0d5542ae067b1c9b80d3ad5331f484b52c67c537fb2ce933a9a7",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://ccca7ccf2f9eef5968302c897bcbffd368014fe46f776de0569e8e77c0cc73f1",
+				"dweb:/ipfs/QmWJ6w7V8e2o8moAcjR2zFr2fsYkDjJvzobTfNr9wubdSG"
+			]
+		},
+		"solmate/src/tokens/ERC20.sol": {
+			"keccak256": "0xcdfd8db76b2a3415620e4d18cc5545f3d50de792dbf2c3dd5adb40cbe6f94b10",
+			"license": "AGPL-3.0-only",
+			"urls": [
+				"bzz-raw://57b3ab70cde374af1cf2c9888636e8de6cf660f087b1c9abd805e9271e19fa35",
+				"dweb:/ipfs/QmNrLDBAHYFjpjSd12jerm1AdBkDqEYUUaXgnT854BUZ97"
+			]
+		}
+	},
+	"version": 1
+}

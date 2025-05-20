@@ -1,0 +1,123 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"components": [
+							{
+								"internalType": "address",
+								"name": "pool",
+								"type": "address"
+							},
+							{
+								"internalType": "uint256",
+								"name": "amountIn",
+								"type": "uint256"
+							},
+							{
+								"internalType": "bool",
+								"name": "zeroForOne",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct UniswapV3Quoter.QuoteParams",
+						"name": "params",
+						"type": "tuple"
+					}
+				],
+				"name": "quote",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "amountOut",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint160",
+						"name": "sqrtPriceX96After",
+						"type": "uint160"
+					},
+					{
+						"internalType": "int24",
+						"name": "tickAfter",
+						"type": "int24"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "int256",
+						"name": "amount0Delta",
+						"type": "int256"
+					},
+					{
+						"internalType": "int256",
+						"name": "amount1Delta",
+						"type": "int256"
+					},
+					{
+						"internalType": "bytes",
+						"name": "data",
+						"type": "bytes"
+					}
+				],
+				"name": "uniswapV3SwapCallback",
+				"outputs": [],
+				"stateMutability": "view",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"UniswapV3Quoter.sol": "UniswapV3Quoter"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"UniswapV3Quoter.sol": {
+			"keccak256": "0x99ac3209e0e89e1d3ccde276524162dbf60c39f2159507b00c7e3b2d79f5f765",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://d5635bf6f532bd3ba89cbb512a788d13ed5407cb2179b68d342ab536d273a0fd",
+				"dweb:/ipfs/QmXHLhNf34QMWu5tCviFSgMuLjvY7MVjUNT3JumbityBu9"
+			]
+		},
+		"interfaces/IUniswapV3Pool.sol": {
+			"keccak256": "0xb1a537444ba96621a629b27cd8df13353ceaf65d9a4601ef72d8da3063598d73",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://0dd0f797e37349b877b8ac64529f1a03ab90514c32855a2171b2351a25a13327",
+				"dweb:/ipfs/QmUku7tgGL7cJxys77RrR9Tu4GPSP8dcoqnxSvZXige5K8"
+			]
+		}
+	},
+	"version": 1
+}

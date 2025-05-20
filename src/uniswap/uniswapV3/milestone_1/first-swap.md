@@ -1,6 +1,11 @@
 # 第一笔交易
 ## 计算交易数量
-首先，我们需要知道如何计算交易出入的数量。
+1. 计算过程中的流动性保持不变
+2. 需要根据当前流动性值和当前价格，根据输入的 tokens 数量计算目标价格
+3. 根据目标价格和当前价格，计算另一种代币的输入/输出数量
+4. 执行 swap 后，更新当前池子的兑换价格和 tick 位置
+
+首先，需要知道如何计算交易出入的数量。
 同样，我们在这小节中也会硬编码我们希望交易的 `USDC` 数额，这里我们选择  `42 USDC swap  ETH`。
 
 在决定了我们希望投入的资金量之后，需要计算我们会获得多少 `ETH token`。
@@ -94,12 +99,12 @@ function swap(address recipient)
     public
     returns (int256 amount0, int256 amount1)
 {
-    ...
 ```
 
 此时，它仅仅接受一个 `recipient` 参数，即提出 `token` 的接收者。
 
-首先，我们需要计算出目标价格和对应 `tick`，以及 `token` 的数量。同样，我们将会在这里硬编码我们之前计算出来的值：
+首先，我们需要计算出目标价格和对应 `tick`，以及 `token` 的数量。
+同样，我们将会在这里硬编码我们之前计算出来的值：
 
 ```solidity
 int24 nextTick = 85184;
@@ -107,21 +112,17 @@ uint160 nextPrice = 5604469350942327889444743441197;
 
 amount0 = -0.008396714242162444 ether;
 amount1 = 42 ether;
-...
 ```
 
 接下来，我们需要更新现在的 tick 和对应的 `sqrtP`：
 
 ```solidity
-...
 (slot0.tick, slot0.sqrtPriceX96) = (nextTick, nextPrice);
-...
 ```
 
-然后，合约把对应的 token 发送给 recipient 并且让调用者将需要的 token 转移到本合约：
+然后，`manager` 合约把对应的 `token` 发送给 `recipient` 并且让调用者将需要的 `token` 转移到本合约：
 
 ```solidity
-...
 IERC20(token0).transfer(recipient, uint256(-amount0));
 
 uint256 balance1Before = balance1();
@@ -131,15 +132,14 @@ IUniswapV3SwapCallback(msg.sender).uniswapV3SwapCallback(
 );
 if (balance1Before + uint256(amount1) < balance1())
     revert InsufficientInputAmount();
-...
 ```
 
-我们使用 callback 函数来将控制流转移到调用者，让它转入 token，之后我们需要通过检查确认 caller 转入了正确的数额。
+我们使用 `callback` 函数来将控制流转移到调用者，
+让它转入 `token`，之后我们需要通过检查确认 `caller` 转入了正确的数额。
 
 最后，合约释放出一个 `swap` 事件，使得该笔交易能够被监听到。这个事件包含了所有有关这笔交易的信息：
 
 ```solidity
-...
 emit Swap(
     msg.sender,
     recipient,
@@ -150,111 +150,109 @@ emit Swap(
     slot0.tick
 );
 ```
+本章中所有用到的 python 计算都在 [unimath.py](https://github.com/Jeiwan/uniswapv3-code/blob/main/unimath.py)。
+```python
+import math
 
-这样就完成了。这个函数的功能仅仅是将一些 token 发送到了指定的接收地址，并且从调用者处接受一定数量的另一种 token。随着本书的进展，这个函数会变得越来越复杂。
+min_tick = -887272
+max_tick = 887272
 
-## 测试交易
+q96 = 2**96
+eth = 10**18
 
-现在，我们来测试 `swap` 函数。在相同的测试文件中（即 `UniswapV3Pool.t.sol`），创建 `testSwapBuyEth` 函数并进行初始化设置。准备阶段的参数与 `testMintSuccess` 一致：
+
+def price_to_tick(p):
+    return math.floor(math.log(p, 1.0001))
 
 
-```solidity
-function testSwapBuyEth() public {
-    TestCaseParams memory params = TestCaseParams({
-        wethBalance: 1 ether,
-        usdcBalance: 5000 ether,
-        currentTick: 85176,
-        lowerTick: 84222,
-        upperTick: 86129,
-        liquidity: 1517882343751509868544,
-        currentSqrtP: 5602277097478614198912276234240,
-        shouldTransferInCallback: true,
-        mintLiqudity: true
-    });
-    (uint256 poolBalance0, uint256 poolBalance1) = setupTestCase(params);
+def price_to_sqrtp(p):
+    return int(math.sqrt(p) * q96)
 
-    ...
+
+def sqrtp_to_price(sqrtp):
+    return (sqrtp / q96) ** 2
+
+
+def tick_to_sqrtp(t):
+    return int((1.0001 ** (t / 2)) * q96)
+
+
+def liquidity0(amount, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return (amount * (pa * pb) / q96) / (pb - pa)
+
+
+def liquidity1(amount, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return amount * q96 / (pb - pa)
+
+
+def calc_amount0(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * q96 * (pb - pa) / pb / pa)
+
+
+def calc_amount1(liq, pa, pb):
+    if pa > pb:
+        pa, pb = pb, pa
+    return int(liq * (pb - pa) / q96)
+
+
+# Liquidity provision
+price_low = 4545
+price_cur = 5000
+price_upp = 5500
+
+print(f"Price range: {price_low}-{price_upp}; current price: {price_cur}")
+
+sqrtp_low = price_to_sqrtp(price_low)
+sqrtp_cur = price_to_sqrtp(price_cur)
+sqrtp_upp = price_to_sqrtp(price_upp)
+
+amount_eth = 1 * eth
+amount_usdc = 5000 * eth
+
+liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
+liq = int(min(liq0, liq1))
+
+print(f"Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}")
+
+# Swap USDC for ETH
+amount_in = 42 * eth
+
+print(f"\nSelling {amount_in/eth} USDC")
+
+price_diff = (amount_in * q96) // liq
+price_next = sqrtp_cur + price_diff
+
+print("New price:", (price_next / q96) ** 2)
+print("New sqrtP:", price_next)
+print("New tick:", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount1(liq, price_next, sqrtp_cur)
+amount_out = calc_amount0(liq, price_next, sqrtp_cur)
+
+print("USDC in:", amount_in / eth)
+print("ETH out:", amount_out / eth)
+
+# Swap ETH for USDC
+amount_in = 0.01337 * eth
+
+print(f"\nSelling {amount_in/eth} ETH")
+
+price_next = int((liq * q96 * sqrtp_cur) // (liq * q96 + amount_in * sqrtp_cur))
+
+print("New price:", (price_next / q96) ** 2)
+print("New sqrtP:", price_next)
+print("New tick:", price_to_tick((price_next / q96) ** 2))
+
+amount_in = calc_amount0(liq, price_next, sqrtp_cur)
+amount_out = calc_amount1(liq, price_next, sqrtp_cur)
+
+print("ETH in:", amount_in / eth)
+print("USDC out:", amount_out / eth)
 ```
-
-> 我们不会测试流动性是否正确添加到了池子里，因为之前已经有过针对此功能的测试样例了。
-
-在测试中，我们需要 42 USDC：
-
-```solidity
-token1.mint(address(this), 42 ether);
-```
-
-交易之前，我们还需要实现 callback 函数，来确保能够将钱转给池子合约：
-
-```solidity
-function uniswapV3SwapCallback(int256 amount0, int256 amount1) public {
-    if (amount0 > 0) {
-        token0.transfer(msg.sender, uint256(amount0));
-    }
-
-    if (amount1 > 0) {
-        token1.transfer(msg.sender, uint256(amount1));
-    }
-}
-```
-由于交易中的数额可以为正或负（从池子中拿走的数量），在 callback 中我们只发出数额为正的对应 token，也即我们希望卖出的 token。
-
-现在我们可以调用 `swap` 了：
-
-```solidity
-(int256 amount0Delta, int256 amount1Delta) = pool.swap(address(this));
-```
-
-函数返回了在本次交易中涉及到的两种 token 数量，我们需要验证一下它们是否正确：
-
-```solidity
-assertEq(amount0Delta, -0.008396714242162444 ether, "invalid ETH out");
-assertEq(amount1Delta, 42 ether, "invalid USDC in");
-```
-接下来，我们需要验证 token 的确从调用者（即本测试合约）处转出：
-
-```solidity
-assertEq(
-    token0.balanceOf(address(this)),
-    uint256(userBalance0Before - amount0Delta),
-    "invalid user ETH balance"
-);
-assertEq(
-    token1.balanceOf(address(this)),
-    0,
-    "invalid user USDC balance"
-);
-```
-
-并且被发送到了池子合约中：
-```solidity
-assertEq(
-    token0.balanceOf(address(pool)),
-    uint256(int256(poolBalance0) + amount0Delta),
-    "invalid pool ETH balance"
-);
-assertEq(
-    token1.balanceOf(address(pool)),
-    uint256(int256(poolBalance1) + amount1Delta),
-    "invalid pool USDC balance"
-);
-```
-
-最后，我们验证池子的状态是否正确更新：
-
-```solidity
-(uint160 sqrtPriceX96, int24 tick) = pool.slot0();
-assertEq(
-    sqrtPriceX96,
-    5604469350942327889444743441197,
-    "invalid current sqrtP"
-);
-assertEq(tick, 85184, "invalid current tick");
-assertEq(
-    pool.liquidity(),
-    1517882343751509868544,
-    "invalid current liquidity"
-);
-```
-
-注意到，在这里交易并没有改变池子流动性——在后面的某个章节，我们会看到它将如何改变
