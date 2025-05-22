@@ -1,6 +1,6 @@
 # 流动性计算
 
-在 `UniswapV3` 的所有数学公式中，只剩流动性计算我们还没在 Solidity 里面实现。在 Python 脚本中我们有这两个函数：
+在 `UniswapV3` 的所有数学公式中，只剩流动性计算我们还没在 `Solidity` 里面实现。
 
 ```python
 def liquidity0(amount, pa, pb):
@@ -21,11 +21,10 @@ def liquidity1(amount, pa, pb):
 
 我们要实现的函数是在已知 token 数量和价格区间的情况下计算流动性（$L = \sqrt{xy}$）。我们之前已经知道了所有相关的公式，让我们回顾一下：
 
-$$\Delta x = \Delta \frac{1}{\sqrt{P}}L$$
 
-在上一章，我们使用这个函数来计算交易数量（这里的 $\Delta x$），现在我们用它来计算 $L$：
+$$\Delta x = (\frac{1}{\sqrt{P_{target}}} - \frac{1}{\sqrt{P_{current}}}) L$$
+$$= \frac{L}{\sqrt{P_{target}}} - \frac{L}{\sqrt{P_{current}}}$$
 
-$$L = \frac{\Delta x}{\Delta \frac{1}{\sqrt{P}}}$$
 
 简化之后：
 $$L = \frac{\Delta x \sqrt{P_u} \sqrt{P_l}}{\sqrt{P_u} - \sqrt{P_l}}$$
@@ -54,7 +53,7 @@ function getLiquidityForAmount0(
 
 ## 实现 Token Y 的流动性计算
 
-类似得，我们将使用[计算流动性](https://y1cunhui.github.io/uniswapV3-book-zh-cn/docs/milestone_1/calculating-liquidity/#liquidity-amount-calculation)中出现的另一个公式来在给定 $y$ 的数量和价格区间的前提下计算流动性：
+类似得，我们将使用计算流动性中出现的另一个公式来在给定 $y$ 的数量和价格区间的前提下计算流动性：
 
 $$\Delta y = \Delta\sqrt{P} L$$
 $$L = \frac{\Delta y}{\sqrt{P_u}-\sqrt{P_l}}$$
@@ -78,13 +77,15 @@ function getLiquidityForAmount1(
 }
 ```
 
-希望这些代码足够清晰易懂。
-
 ## 找到公平的流动性
+ $L = \sqrt{xy}$
 
-你可能会问为什么我们有两种方式来计算 $L$，但是我们实际上只有一个 $L$，即 $L = \sqrt{xy}$，究竟哪种方法是正确的？答案是：两种方法都是正确的。
-
-在上面的公式中，我们基于不同的参数来计算$L$：价格区间和其中某种 token 的数量。不同的价格区间和不同的 token 数量会导致不同的 $L$。有一个场景是我们需要计算两个$L$并且从中挑选出一个的，回顾一下之前的 `mint` 函数：
+在上面的公式中，基于不同的参数来计算$L$：
+> 价格区间和其中某种 token 的数量。
+> 
+> 不同的价格区间和不同的 token 数量会导致不同的 $L$。
+> 
+> 有一个场景是我们需要计算两个$L$并且从中挑选出一个的，回顾一下之前的 `mint` 函数：
 
 ```solidity
 if (slot0_.tick < lowerTick) {

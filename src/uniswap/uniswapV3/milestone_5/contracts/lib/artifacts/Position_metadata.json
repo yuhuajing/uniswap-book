@@ -1,0 +1,77 @@
+{
+	"compiler": {
+		"version": "0.8.26+commit.8a97fa7a"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"lib/Position.sol": "Position"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"lib/FixedPoint128.sol": {
+			"keccak256": "0xa5410b9f302b8f8da371909aae82accf73d0a31cac9ea32e0d49fc91f8cd8b3a",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://71eb3d79576f3e9bd93d8acb6c239a0a59b9c4d2203061db20de908fa8c1b604",
+				"dweb:/ipfs/Qma2BHTgALXCh1A5mDfhtYE4tmRxGETggMPquzWnvHwS9U"
+			]
+		},
+		"lib/FixedPoint96.sol": {
+			"keccak256": "0x9f249b890f1a47e28cbb02df5967337dd39ac7284e3fcbe53ee91245070eedbc",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://4fdb1f47740430cc2bfa0c8e5a44c239fffea5fb8eaa9fd9ca2ff5c52dd6c769",
+				"dweb:/ipfs/QmTYwvo9aSXQLmaiLBhde312dpahTTAzVRzwJdeFY7nAuF"
+			]
+		},
+		"lib/LiquidityMath.sol": {
+			"keccak256": "0xc0376374e0dc7c3825a0e9827e5cae44b39143eae98cdabdff5e81f7c9dec1e7",
+			"license": "GPL-2.0-or-later",
+			"urls": [
+				"bzz-raw://dc9ab13f766ee4dfa419b07cf3dabf99c5fe2479ba56385cc49fcc9232cd1cca",
+				"dweb:/ipfs/Qmd91f3UYWTG1sP7zkfqvNdfBAyHMTqnEdknQug4QNyLXx"
+			]
+		},
+		"lib/PRBMath.sol": {
+			"keccak256": "0xd6dce6b46f4c628c137ace5b59f3252eac6d904b6bca063b6cadb1c7543ce01d",
+			"license": "Unlicense",
+			"urls": [
+				"bzz-raw://75045a9cb6355b42d8a5851480a653ddab5f217fbfca17dd70dd73234d36840e",
+				"dweb:/ipfs/QmdFfEXWUHVPfsyK7J3XtVve6VDCx1SQfp2YANLc1vf9NP"
+			]
+		},
+		"lib/Position.sol": {
+			"keccak256": "0x81167d6833947933244de9c7ccd47741178b31d2b8846690c15c2d5de24f5289",
+			"license": "BUSL-1.1",
+			"urls": [
+				"bzz-raw://ebf477b0914cbec576a453d6218da0a62665824599df4c976647ba358c476cca",
+				"dweb:/ipfs/QmV36ky7m3xYpwCy53KfNubZkE3xexwRbjTx17AcSM2rfr"
+			]
+		}
+	},
+	"version": 1
+}

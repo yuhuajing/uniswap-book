@@ -6,7 +6,7 @@
 
 我构建了 Uniswap V3 NFT 的这样一个简化版本：
 
-![SVG template for NFT tokens](/images/milestone_6/nft_template.png)
+![SVG template for NFT tokens](../images/milestone_6/nft_template.png)
 
 它的代码如下：
 ```svg

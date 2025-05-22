@@ -18,6 +18,8 @@ $$\sqrt{P_{target}} = \sqrt{P_{current}} + \Delta \sqrt{P}$$
 
 $$\Delta x = \Delta \frac{1}{\sqrt{P}}L$$
 
+$$\Delta y = \Delta {\sqrt{P}} L$$
+
 从上面公式，我们可以推导出目标价格：
 
 $$\Delta x = (\frac{1}{\sqrt{P_{target}}} - \frac{1}{\sqrt{P_{current}}}) L$$
@@ -25,6 +27,9 @@ $$= \frac{L}{\sqrt{P_{target}}} - \frac{L}{\sqrt{P_{current}}}$$
 
 
 $$\\ \sqrt{P_{target}} = \frac{\sqrt{P}L}{\Delta x \sqrt{P} + L}$$
+
+$$\\ \sqrt{P_{target}} = \frac{\Delta y}{L } + \sqrt{P}$$
+
 
 知道了目标价格，我们就能够用前一章类似的方式计算出输出的金额
 

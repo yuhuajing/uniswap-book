@@ -24,15 +24,12 @@ function swap(
 在 `swap` 函数中，我们新增了两个参数：`zeroForOne` 和 `amountSpecified`。
 
 `zeroForOne` 是用来控制交易方向的 `flag`：
-
-当设置为 `true`，表示卖出 `Token0`， 用 `token0` 兑换 `token1`；
-
-`false` 则相反。
+ - `true`，表示卖出 `Token0`， 用 `token0` 兑换 `token1`；
+ - `false` 则相反。
 
 `amountSpecified` 是用户希望兑换到的 `token` 数量。
 
 ## 完成兑换订单
-
 由于在 `UniswapV3` 中，流动性存储在不同的价格区间中，池子合约需要找到“填满当前订单”所需要的所有流动性。
 这个操作是通过沿着某个方向遍历所有初始化的 `tick` 来实现的。
 
@@ -56,13 +53,12 @@ struct StepState {
 ```
 
 `SwapState` 维护了当前 swap 的状态。
-
 - `amoutSpecifiedRemaining` 跟踪了还需要从池子中获取的 `token` 数量：当这个数量为 0 时，这笔订单就被填满了。
 - `amountCalculated` 是由合约计算出的输出数量。
 - `sqrtPriceX96` 和 `tick` 是交易结束后的价格和 `tick`。
-- `StepState` 维护了当前交易“一步”的状态。这个结构体跟踪“填满订单”过程中**一个循环**的状态。
 
-`sqrtPriceStartX96` 跟踪循环开始时的价格。
+`StepState` 维护了当前交易“一步”的状态。这个结构体跟踪“填满订单”过程中**一个循环**的状态。
+- `sqrtPriceStartX96` 跟踪循环开始时的价格。
 - `nextTick` 是能够为交易提供流动性的下一个已初始化的`tick`， 
 - `sqrtPriceNextX96` 是下一个 `tick` 的价格。
 - `amountIn` 和 `amountOut` 是当前循环中流动性能够提供的数量。
@@ -70,12 +66,6 @@ struct StepState {
 > 在我们实现跨 tick 的交易后（也即不发生在一个价格区间中的交易），关于循环方面会有更清晰的了解。
 
 ```solidity
-    function swap(
-        address recipient,
-        bool zeroForOne,
-        uint256 amountSpecified,
-        bytes calldata data
-    ) public returns (int256 amount0, int256 amount1) {
         Slot0 memory slot0_ = slot0;
 
         SwapState memory state = SwapState({
@@ -86,9 +76,29 @@ struct StepState {
         });
 ```
 
-在填满一个订单之前，我们首先初始化 `SwapState` 的实例。
+在填满一个订单之前，我们首先获取当前池子中的价格和tick Index， 然后初始化 `SwapState` 的实例。
 
 我们将会循环直到 `amoutSpecified == 0`，也即池子拥有足够的流动性来买用户的 `amountSpecified` 数量的token。
+
+```solidity
+        while (state.amountSpecifiedRemaining > 0) {
+            .....
+        }
+```
+### 计算兑换的价格区间
+#### 初始化 step 变量
+在循环中，每次初始化新的 step 变量
+- `sqrtPriceStartX96`
+  - 第一次循环的值为当前池子内部的价格
+  - 之后的每次循环，该值都是执行完当前一定数量代币 `swap` 后的价格
+- `nextTick`
+  - 根据循环外的 `state` 变量记录的 `Tick_Index` 和方向寻找到的下一个有流动性代币的 `Tick_Index`
+- `sqrtPriceNextX96`
+  - `nextTick` 对应的价格
+- `amountIn`， `amountOut` 
+  - 按照 当前的流动性 和 `sqrtPriceStartX96 ~ sqrtPriceNextX96`价格区间，计算得出的最大可 swap 的代币数量
+    - 大于等于当前需要的代币数量的话，按照实际兑换数量计算新的价格
+    - 小于的话，在当前区间内执行部分兑换并更新 `tick = nextTick，sqrtPriceStartX96 = sqrtPriceNextX96`，进入下一个循环
 
 ```solidity
         while (state.amountSpecifiedRemaining > 0) {
@@ -111,62 +121,53 @@ struct StepState {
                     liquidity,
                     state.amountSpecifiedRemaining
                 );
-
-            state.amountSpecifiedRemaining -= step.amountIn;
-            state.amountCalculated += step.amountOut;
-            state.tick = TickMath.getTickAtSqrtRatio(state.sqrtPriceX96);
-        }
 ```
 
-在循环中，每次为 swap 交易设置新的价格区间：
+#### SwapMath.computeSwapStep 合约
 
-区间是从局部的全部变量 `state.sqrtPriceX96` 到根据下一个存在流动性的 `Tick` 计算出的 `step.sqrtPriceNextX96`，
+**_本章介绍的是在同一个价格区间内可以完成的兑换，不考虑进入下次循环。_**
 
+首先根据输入的代币数量和当前池子的价格计算出兑换后的最新价格：
+计算公式：
 
-## SwapMath 合约
+$$\sqrt{P_{target}} = \frac{\sqrt{P}L}{\Delta x \sqrt{P} + L}$$
 
+当它可能产生溢出时，我们使用另一个替代的公式，精确度会更低但是不会溢出：
+
+$$\sqrt{P_{target}} = \frac{L}{\Delta x + \frac{L}{\sqrt{P}}}$$
+
+$$\\ \sqrt{P_{target}} = \frac{\Delta y}{L } + \sqrt{P}$$
 ```solidity
-// src/lib/SwapMath.sol
-function computeSwapStep(
-    uint160 sqrtPriceCurrentX96,
-    uint160 sqrtPriceTargetX96,
-    uint128 liquidity,
-    uint256 amountRemaining
-)
-    internal
-    pure
-    returns (
-        uint160 sqrtPriceNextX96,
-        uint256 amountIn,
-        uint256 amountOut
+    function computeSwapStep(
+        uint160 sqrtPriceCurrentX96,
+        uint160 sqrtPriceTargetX96,
+        uint128 liquidity,
+        uint256 amountRemaining
     )
-{
-    ...
+        internal
+        pure
+        returns (
+            uint160 sqrtPriceNextX96,
+            uint256 amountIn,
+            uint256 amountOut
+        )
+    {
+        bool zeroForOne = sqrtPriceCurrentX96 >= sqrtPriceTargetX96;
+
+        sqrtPriceNextX96 = Math.getNextSqrtPriceFromInput(
+            sqrtPriceCurrentX96,
+            liquidity,
+            amountRemaining,
+            zeroForOne
+        );
 ```
+根据  `sqrtPriceCurrentX96 ~ sqrtPriceNextX96` 计算代币对的预期输入和输出数量
 
-这是整个 `swap` 的核心逻辑所在:
+计算公式：
 
-这个函数计算了一个价格区间内部的交易数量以及对应的流动性。
+$$\Delta x = \Delta \frac{1}{\sqrt{P}}L$$
 
-它的返回值是：新的现价、输入 `token` 数量、输出 `token` 数量。
-
-尽管输入 `token` 数量是由用户提供的，
-
-仍然需要进行计算在对于 `computeSwapStep` 的一次调用中可以处理多少用户提供的 `token`。
-
-```solidity
-bool zeroForOne = sqrtPriceCurrentX96 >= sqrtPriceTargetX96;
-
-sqrtPriceNextX96 = Math.getNextSqrtPriceFromInput(
-    sqrtPriceCurrentX96,
-    liquidity,
-    amountRemaining,
-    zeroForOne
-);
-```
-通过检查价格大小我们来确认交易的方向。知道交易方向后，我们就可以计算交易 `amountRemaining` 数量 token 之后的价格。在下面我们还会回过头来看这个函数。
-
-找到新的价格后，我们根据之前已有的函数能够计算出输入和输出的数量（与 `mint` 里面用到的，根据流动性计算 token 数量的函数相同）：
+$$\Delta y = \Delta {\sqrt{P}} L$$
 
 ```solidity
 amountIn = Math.calcAmount0Delta(
@@ -181,117 +182,12 @@ amountOut = Math.calcAmount1Delta(
 );
 ```
 
-And swap the amounts if the direction is opposite:
-```solidity
-if (!zeroForOne) {
-    (amountIn, amountOut) = (amountOut, amountIn);
-}
-```
-
-这就是 `computeSwapStep` 的全部！
-
-## 通过数量获取价格
-根据现在的 $\sqrt{P_c}$、流动性、和输入数量，计算出交易后新的 $\sqrt{P_t}$。
-
-一个好消息是我们已经知道了相关的公式。回忆一下，我们之前在 Python 中计算 `price_next`
-
-```python
-# When amount_in is token0
-price_next = int((liq * q96 * sqrtp_cur) // (liq * q96 + amount_in * sqrtp_cur))
-# When amount_in is token1
-price_next = sqrtp_cur + (amount_in * q96) // liq
-```
-
-我们会在 Solidity 中实现上述功能：
-```solidity
-// src/lib/Math.sol
-function getNextSqrtPriceFromInput(
-    uint160 sqrtPriceX96,
-    uint128 liquidity,
-    uint256 amountIn,
-    bool zeroForOne
-) internal pure returns (uint160 sqrtPriceNextX96) {
-    sqrtPriceNextX96 = zeroForOne
-        ? getNextSqrtPriceFromAmount0RoundingUp(
-            sqrtPriceX96,
-            liquidity,
-            amountIn
-        )
-        : getNextSqrtPriceFromAmount1RoundingDown(
-            sqrtPriceX96,
-            liquidity,
-            amountIn
-        );
-}
-```
-这个函数仅仅是分别处理了两个方向的功能。我们会分别在两个不同的函数中进行实现：
-
-```solidity
-function getNextSqrtPriceFromAmount0RoundingUp(
-    uint160 sqrtPriceX96,
-    uint128 liquidity,
-    uint256 amountIn
-) internal pure returns (uint160) {
-    uint256 numerator = uint256(liquidity) << FixedPoint96.RESOLUTION;
-    uint256 product = amountIn * sqrtPriceX96;
-
-    if (product / amountIn == sqrtPriceX96) {
-        uint256 denominator = numerator + product;
-        if (denominator >= numerator) {
-            return
-                uint160(
-                    mulDivRoundingUp(numerator, sqrtPriceX96, denominator)
-                );
-        }
-    }
-
-    return
-        uint160(
-            divRoundingUp(numerator, (numerator / sqrtPriceX96) + amountIn)
-        );
-}
-```
-
-在这个函数中，我们实现了两个公式。在第一个 `return` 那里，实现了我们 Python 中提到的公式。这是最精确的公式，但是它可能会在 `amountIn` 与 `sqrtPriceX96` 相乘时产生溢出。公式是：
-
-$$\sqrt{P_{target}} = \frac{\sqrt{P}L}{\Delta x \sqrt{P} + L}$$
-
-当它可能产生溢出时，我们使用另一个替代的公式，精确度会更低但是不会溢出：
-
-$$\sqrt{P_{target}} = \frac{L}{\Delta x + \frac{L}{\sqrt{P}}}$$
-
-其实也仅仅是把第一个公式上下同时除以 $\sqrt{P}$ 得到的。
-
-另一个函数的实现会简单一些：
-```solidity
-function getNextSqrtPriceFromAmount1RoundingDown(
-    uint160 sqrtPriceX96,
-    uint128 liquidity,
-    uint256 amountIn
-) internal pure returns (uint160) {
-    return
-        sqrtPriceX96 +
-        uint160((amountIn << FixedPoint96.RESOLUTION) / liquidity);
-}
-```
-
-## 完成 swap
-
-到目前为止，已经能够沿着下一个初始化过的tick进行循环;
-填满用户指定的 `amoutSpecified`、计算输入和输出数量，
-并且找到新的价格和 tick。
-
-只需要去更新合约状态、将 token 发送给用户，并从用户处获得 token。
-
-设置新的价格和 tick:
+#### 更新 state变量
 ```solidity
 if (state.tick != slot0_.tick) {
-    (slot0.sqrtPriceX96, slot0.tick) = (state.sqrtPriceX96, state.tick);
-}
-```
-根据交易方向与用户交换 token
+            (slot0.sqrtPriceX96, slot0.tick) = (state.sqrtPriceX96, state.tick);
+        }
 
-```solidity
         (amount0, amount1) = zeroForOne
             ? (
                 int256(amountSpecified - state.amountSpecifiedRemaining),
@@ -301,7 +197,18 @@ if (state.tick != slot0_.tick) {
                 -int256(state.amountCalculated),
                 int256(amountSpecified - state.amountSpecifiedRemaining)
             );
+```
+#### 执行兑换
+到目前为止，已经能够沿着下一个初始化过的tick进行循环;
 
+填满用户指定的 `amoutSpecified`、计算输入和输出数量，
+并且找到新的价格和 tick。
+
+根据交易方向与用户交换 `token`
+- 先将一定数量的目标代币转到接收地址
+- 收取一定数量的输入代币，通过 `IUniswapV3SwapCallback` 实现
+
+```solidity
         if (zeroForOne) {
             ERC20(token1).transfer(recipient, uint256(-amount1));
 
