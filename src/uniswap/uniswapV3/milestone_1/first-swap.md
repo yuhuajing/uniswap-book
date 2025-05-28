@@ -152,13 +152,15 @@ emit Swap(
 ```
 本章中所有用到的 python 计算都在 [unimath.py](https://github.com/Jeiwan/uniswapv3-code/blob/main/unimath.py)。
 ```python
+# Online Python compiler (interpreter) to run Python online.
+# Write Python 3 code in this online editor and run it.
 import math
 
 min_tick = -887272
 max_tick = 887272
 
 q96 = 2**96
-eth = 10**18
+ETH = 10**18
 
 
 def price_to_tick(p):
@@ -202,9 +204,9 @@ def calc_amount1(liq, pa, pb):
 
 
 # Liquidity provision
-price_low = 4545
-price_cur = 5000
-price_upp = 5500
+price_low = 0.9
+price_cur = 1
+price_upp = 1.1
 
 print(f"Price range: {price_low}-{price_upp}; current price: {price_cur}")
 
@@ -212,19 +214,35 @@ sqrtp_low = price_to_sqrtp(price_low)
 sqrtp_cur = price_to_sqrtp(price_cur)
 sqrtp_upp = price_to_sqrtp(price_upp)
 
-amount_eth = 1 * eth
-amount_usdc = 5000 * eth
+amount_ETH = 100 * ETH
+amount_usdc = 100 * ETH
 
-liq0 = liquidity0(amount_eth, sqrtp_cur, sqrtp_upp)
+liq0 = liquidity0(amount_ETH, sqrtp_cur, sqrtp_upp)
 liq1 = liquidity1(amount_usdc, sqrtp_cur, sqrtp_low)
 liq = int(min(liq0, liq1))
 
-print(f"Deposit: {amount_eth/eth} ETH, {amount_usdc/eth} USDC; liquidity: {liq}")
+print(f"预计Deposit: {amount_ETH/ETH} ETH, {amount_usdc/ETH} USDC;")
+
+
+amount0 = calc_amount0(liq, sqrtp_upp, sqrtp_cur)
+amount1 = calc_amount1(liq, sqrtp_low, sqrtp_cur)
+
+print(f"实际Deposit: {amount0/ETH} ETH, {amount1/ETH} USDC; liquidity: {liq}")
+
+
+
+amount_in = calc_amount1(liq, sqrtp_upp, sqrtp_cur)
+print(f"买空ETH,USDC in:{amount_in / ETH}, USDC Left:{amount_in / ETH + amount1/ETH}")
+
+amount_out = calc_amount0(liq, sqrtp_low, sqrtp_cur)
+print(f"买空USDC,ETH In:{ amount_out / ETH},ETH Left:{ amount_out / ETH + amount0/ETH}",)
+
+
 
 # Swap USDC for ETH
-amount_in = 42 * eth
+amount_in = 90 * ETH
 
-print(f"\nSelling {amount_in/eth} USDC")
+print(f"\nSelling {amount_in/ETH} USDC")
 
 price_diff = (amount_in * q96) // liq
 price_next = sqrtp_cur + price_diff
@@ -236,13 +254,13 @@ print("New tick:", price_to_tick((price_next / q96) ** 2))
 amount_in = calc_amount1(liq, price_next, sqrtp_cur)
 amount_out = calc_amount0(liq, price_next, sqrtp_cur)
 
-print("USDC in:", amount_in / eth)
-print("ETH out:", amount_out / eth)
+print("USDC in:", amount_in / ETH)
+print("ETH out:", amount_out / ETH)
 
 # Swap ETH for USDC
-amount_in = 0.01337 * eth
+amount_in = 85 * ETH
 
-print(f"\nSelling {amount_in/eth} ETH")
+print(f"\nSelling {amount_in/ETH} ETH")
 
 price_next = int((liq * q96 * sqrtp_cur) // (liq * q96 + amount_in * sqrtp_cur))
 
@@ -253,6 +271,31 @@ print("New tick:", price_to_tick((price_next / q96) ** 2))
 amount_in = calc_amount0(liq, price_next, sqrtp_cur)
 amount_out = calc_amount1(liq, price_next, sqrtp_cur)
 
-print("ETH in:", amount_in / eth)
-print("USDC out:", amount_out / eth)
+print("ETH in:", amount_in / ETH)
+print("USDC out:", amount_out / ETH)
+
+```
+
+输出：
+```text
+Price range: 0.9-1.1; current price: 1
+预计Deposit: 100.0 ETH, 100.0 USDC;
+实际Deposit: 90.6866750716307 ETH, 100.0 USDC; liquidity: 1948683298050512519168
+买空ETH,USDC in:95.1129872262578, USDC Left:195.11298722625781
+买空USDC,ETH In:105.40925533894598,ETH Left:196.09593041057667
+
+Selling 90.0 USDC
+New price: 1.0945031206672429
+New sqrtP: 82887317715839302411742291160
+New tick: 903
+USDC in: 90.0
+ETH out: 86.02684732457189
+
+Selling 85.0 ETH
+New price: 0.9181547427103957
+New sqrtP: 75916735498972401919266770503
+New tick: -854
+ETH in: 85.0
+USDC out: 81.44733277451515
+
 ```

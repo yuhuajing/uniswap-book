@@ -5,7 +5,6 @@
 - 每一笔 `swap` 中都会付出一小笔费用,这些费用将会按提供的流动性占比分配给在交易价格上提供流动性的 `LP`。
 
 ## 手续费
-
 在 V2 中，因为大家提供的流动性都是统一的手续费标准（`0.3%`），统一的价格区间(`0, ∞`):
 - 所以大家的资金都是均匀分布在整个价格轴之上的， 
 - 因此在每一笔交易的过程中，大家收取手续费的权重计算比例也应该是相等的。 
@@ -84,10 +83,24 @@ feeGrowthInside = feeGrowthGlobal - feeGrowthOutside_a - (feeGrowthGlobal - feeG
 
 🎯 规则说明
 
-- 当 `tick` > 当前价格（`i > i_current`）时，我们认为该 `tick` 是“在上方”。
+- 当 `tick` <= 当前价格（`i <= i_current`）时，我们认为该 `tick` 是“在上方”。
   - `feeGrowthOutside = feeGrowthGlobal`
-- 当 `tick` <= 当前价格（`i <= i_current`）时，我们认为该 `tick` 是“在下方”。
+- 当 `tick` > 当前价格（`i > i_current`）时，我们认为该 `tick` 是“在下方”。
   - `feeGrowthOutside = 0`
+
+```solidity
+        if (liquidityGrossBefore == 0) {
+            // by convention, we assume that all growth before a tick was initialized happened _below_ the tick
+            if (tick <= tickCurrent) {
+                info.feeGrowthOutside0X128 = feeGrowthGlobal0X128;
+                info.feeGrowthOutside1X128 = feeGrowthGlobal1X128;
+                info.secondsPerLiquidityOutsideX128 = secondsPerLiquidityCumulativeX128;
+                info.tickCumulativeOutside = tickCumulative;
+                info.secondsOutside = time;
+            }
+            info.initialized = true;
+        }
+```
 
 ### 🧪 示例 1：
 添加流动性区间: `(tickLower=100, tickUpper=200)`
@@ -98,14 +111,14 @@ feeGrowthInside = feeGrowthGlobal - feeGrowthOutside_a - (feeGrowthGlobal - feeG
 
 初始化两个 tick:
 
-| Tick | 相对位置   | 设置 feeGrowthOutside    |
-| ---- | ------ | ---------------------- |
-| 100  | ≤ 当前价格 | 0                      |
-| 200  | > 当前价格 | feeGrowthGlobal = 1000 |
+| Tick | 相对位置   | 设置 feeGrowthOutside |
+| ---- | ------ |---------------------|
+| 100  | ≤ 当前价格 | 1000                |
+| 200  | > 当前价格 | 0                   |
 
 ```solidity
-tick[100].feeGrowthOutside = 0;
-tick[200].feeGrowthOutside = 1000;
+tick[100].feeGrowthOutside = 1000;
+tick[200].feeGrowthOutside = 0;
 ```
 
 ## Cross-tick交易
@@ -113,6 +126,22 @@ tick[200].feeGrowthOutside = 1000;
 
 - 当价格穿过某个已初始化的 `tick` 时，该 `tick` 上的 `feeGrowthOutside` 需要翻转，因为外侧手续费永远要在当前价格的另一侧
 - `feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside`
+
+```solidity
+    function cross(
+        mapping(int24 => Tick.Info) storage self,
+        int24 tick,
+        uint256 feeGrowthGlobal0X128,
+        uint256 feeGrowthGlobal1X128,
+        uint160 secondsPerLiquidityCumulativeX128,
+        int56 tickCumulative,
+        uint32 time
+    ) internal returns (int128 liquidityNet) {
+        Tick.Info storage info = self[tick];
+        info.feeGrowthOutside0X128 = feeGrowthGlobal0X128 - info.feeGrowthOutside0X128;
+        info.feeGrowthOutside1X128 = feeGrowthGlobal1X128 - info.feeGrowthOutside1X128;
+ ...
+```
 ### 示例 
 ✅ 基础设定
 
@@ -129,50 +158,90 @@ tick[200].feeGrowthOutside = 1000;
 - 继续上升后进入区间 `C-D`，`feeGrowthGlobal = 500`
 
 ### 阶段 0：初始化时 tick = 150，feeGrowthGlobal = 100
-- tick a = 100（左边）⇒ feeGrowthOutside = 0 
-- tick b = 200（右边）⇒ feeGrowthOutside = 100 
-- tick c = 300（右边）⇒ feeGrowthOutside = 100 
-- tick d = 400（右边）⇒ feeGrowthOutside = 100
+- tick a = 100（左边）⇒ feeGrowthOutside = 100 
+- tick b = 200（右边）⇒ feeGrowthOutside = 0 
+- tick c = 300（右边）⇒ feeGrowthOutside = 0 
+- tick d = 400（右边）⇒ feeGrowthOutside = 0
 
 #### 1 swap在(a,b)
 在 `（a,b）`执行 `swap`, `glb = 100 +80 = 180`
 
-手续费计算：
 ```math
-feeGrowthInside(a,b) = feeGrowthGlobal - feeGrowthOutside_a - feeGrowthOutside_b = 180 - 0 -100 = 80
+feeGrowthInside(a,b) = feeGrowthGlobal - feeGrowthOutside_a - feeGrowthOutside_b = 180 - 100 - 0 = 80
 ```
 
 #### 2 价格上涨后跨到 （c,d）区间
 在 `（a,b）-> (c,d)`执行 `swap`, `glb = 180->300->500`
 
-Cross b: `tick[b].feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside= 300-100 = 200`
+Cross b: `tick[b].feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside= 300 - 0 = 300`
 
-cross c: `tick[c].feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside= 300-100 = 200`
+cross c: `tick[c].feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside= 300 - 0 = 300`
 
 手续费计算：
-```math
-feeGrowthInside(a,b) = |feeGrowthOutside_a - feeGrowthOutside_b| = |0 - 200| = 200
+```solidity
+    function getFeeGrowthInside(
+        mapping(int24 => Tick.Info) storage self,
+        int24 tickLower,
+        int24 tickUpper,
+        int24 tickCurrent,
+        uint256 feeGrowthGlobal0X128,
+        uint256 feeGrowthGlobal1X128
+    ) internal view returns (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128) {
+        Info storage lower = self[tickLower];
+        Info storage upper = self[tickUpper];
 
-feeGrowthInside(c,d) = feeGrowthGlobal - feeGrowthOutside_c - feeGrowthOutside_d = 500 - 200 - 100 = 200
+        // calculate fee growth below
+        uint256 feeGrowthBelow0X128;
+        uint256 feeGrowthBelow1X128;
+        if (tickCurrent >= tickLower) {
+            feeGrowthBelow0X128 = lower.feeGrowthOutside0X128;
+            feeGrowthBelow1X128 = lower.feeGrowthOutside1X128;
+        } else {
+            feeGrowthBelow0X128 = feeGrowthGlobal0X128 - lower.feeGrowthOutside0X128;
+            feeGrowthBelow1X128 = feeGrowthGlobal1X128 - lower.feeGrowthOutside1X128;
+        }
+
+        // calculate fee growth above
+        uint256 feeGrowthAbove0X128;
+        uint256 feeGrowthAbove1X128;
+        if (tickCurrent < tickUpper) {
+            feeGrowthAbove0X128 = upper.feeGrowthOutside0X128;
+            feeGrowthAbove1X128 = upper.feeGrowthOutside1X128;
+        } else {
+            feeGrowthAbove0X128 = feeGrowthGlobal0X128 - upper.feeGrowthOutside0X128;
+            feeGrowthAbove1X128 = feeGrowthGlobal1X128 - upper.feeGrowthOutside1X128;
+        }
+
+        feeGrowthInside0X128 = feeGrowthGlobal0X128 - feeGrowthBelow0X128 - feeGrowthAbove0X128;
+        feeGrowthInside1X128 = feeGrowthGlobal1X128 - feeGrowthBelow1X128 - feeGrowthAbove1X128;
+    }
 ```
 
-🧮 总结：三种场景汇总表
+此时， (a,b) 区间的手续费:
 
-| 场景           | Tick 相对当前价格  | feeGrowthOutside 初始化值          | 跨越后如何变化 |
-| ------------ | ------------ | ------------------------------ | ------- |
-| 流动性注入：tick 低 | ≤ i\_current | 0                              | 无       |
-| 流动性注入：tick 高 | > i\_current | feeGrowthGlobal                | 无       |
-| Tick 向右穿越    | 从 ≤ i 到 > i  | `feeGrowthOutside = fgG - old` | “外部”换边  |
-| Tick 向左穿越    | 从 > i 到 ≤ i  | `feeGrowthOutside = fgG - old` | “外部”换边  |
+当价格已经不在计算的价格区间内时：手续费的计算已经和 总手续费无关，只跟区间的手续费差有关
+```text
+P_a < P_current, feeGrowthBelow = P_a.feeGrowthBelow = 100
+P_a < P_current, feeGrowthAboveX128 = feeGrowthGlobalX128 - P_b.feeGrowthOutsideX128 = 500 - 300 = 200
+Fee(a,b) = feeGrowthGlobalX128 - P_a.feeGrowthBelow - feeGrowthGlobalX128 +  P_b.feeGrowthOutsideX128
+= P_b.feeGrowthOutsideX128 - P_a.feeGrowthBelow 
+= 300 -100 = 200
+```
 
+此时， (c,d) 区间的手续费：
+```text
+P_c < P_current, feeGrowthBelow = P_c.feeGrowthBelow = 300
+P_current < P_d, feeGrowthAboveX128 = P_d.feeGrowthOutside128 = 0
+Fee(c,d) = 500 - 300 - 0 = 200
+```
 
 ## 规则回顾
 1. 用户 `swap token` 的时候支付费用。输入 `token` 中的一小部分将会被减去，并累积到池子的余额中。
 2. 每个池子都有 `feeGrowthGlobal0X128` 和 `feeGrowthGlobal1X128` 两个状态变量，来跟踪每单位的流动性累计的总费用（也即，总的费用除以池子流动性）。
 3. `tick` 跟踪在它之外累积的费用
 - 当添加一个新的位置并激活一个 tick 的时候
-  - tick 位置价格高于现价 slot0.tick, `feeGrowthOutside = fee_global`
-  - tick 位置价格高小于等于现价 slot0.tick, `feeGrowthOutside = 0`
+  - tick 位置价格高于现价 slot0.tick, `feeGrowthOutside = 0`
+  - tick 位置价格高小于等于现价 slot0.tick, `feeGrowthOutside = fee_global`
 4. 每当一个 `tick` 被 `cross` 时,在这个 `tick` 之外积累的费用就会更新为:
 - `feeGrowthOutside = feeGrowthGlobal - feeGrowthOutside`
 5. `tick` 知道了在他之外累积了多少费用，就可以让我们计算出在一个 `position` 内部累积了多少费用（`position` 就是两个 `tick` 之间的区间）。
@@ -309,61 +378,6 @@ if (zeroForOne) {
 
 由于一个 `position` 就是两个 `tick` 之间的一个区间，可以使用 `tick` 中的费用追踪器来计算这些值。
 
-```solidity
-// src/lib/Tick.sol
-function getFeeGrowthInside(
-    mapping(int24 => Tick.Info) storage self,
-    int24 lowerTick_,
-    int24 upperTick_,
-    int24 currentTick,
-    uint256 feeGrowthGlobal0X128,
-    uint256 feeGrowthGlobal1X128
-)
-    internal
-    view
-    returns (uint256 feeGrowthInside0X128, uint256 feeGrowthInside1X128)
-{
-    Tick.Info storage lowerTick = self[lowerTick_];
-    Tick.Info storage upperTick = self[upperTick_];
-
-    uint256 feeGrowthBelow0X128;
-    uint256 feeGrowthBelow1X128;
-    if (currentTick >= lowerTick_) {
-        feeGrowthBelow0X128 = lowerTick.feeGrowthOutside0X128;
-        feeGrowthBelow1X128 = lowerTick.feeGrowthOutside1X128;
-    } else {
-        feeGrowthBelow0X128 =
-            feeGrowthGlobal0X128 -
-            lowerTick.feeGrowthOutside0X128;
-        feeGrowthBelow1X128 =
-            feeGrowthGlobal0X128 -
-            lowerTick.feeGrowthOutside1X128;
-    }
-
-    uint256 feeGrowthAbove0X128;
-    uint256 feeGrowthAbove1X128;
-    if (currentTick < upperTick_) {
-        feeGrowthAbove0X128 = upperTick.feeGrowthOutside0X128;
-        feeGrowthAbove1X128 = upperTick.feeGrowthOutside1X128;
-    } else {
-        feeGrowthAbove0X128 =
-            feeGrowthGlobal0X128 -
-            upperTick.feeGrowthOutside0X128;
-        feeGrowthAbove1X128 =
-            feeGrowthGlobal0X128 -
-            upperTick.feeGrowthOutside1X128;
-    }
-
-    feeGrowthInside0X128 =
-        feeGrowthGlobal0X128 -
-        feeGrowthBelow0X128 -
-        feeGrowthAbove0X128;
-    feeGrowthInside1X128 =
-        feeGrowthGlobal1X128 -
-        feeGrowthBelow1X128 -
-        feeGrowthAbove1X128;
-}
-```
 得到 `position` 内累积的费用后，就可以更新 `position` 内的费用和数量追踪器了：
 
 ```solidity
