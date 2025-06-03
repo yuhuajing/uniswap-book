@@ -299,3 +299,8 @@ ETH in: 85.0
 USDC out: 81.44733277451515
 
 ```
+
+## Preference
+[https://www.rapidtables.com/calc/math/log-calculator.html](https://www.rapidtables.com/calc/math/log-calculator.html)
+
+[https://www.programiz.com/python-programming/online-compiler/](https://www.programiz.com/python-programming/online-compiler/)
