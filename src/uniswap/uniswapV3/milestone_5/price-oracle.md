@@ -3,11 +3,22 @@
 要在 `DEX` 中添加的最后一个机制就是*价格预言机*。
 ## 什么是价格预言机？
 
-价格预言机(`Price Oracle`)是向区块链提供资产价格的一种机制。
+价格预言机 [Oracle](https://ethereum.org/en/developers/docs/oracles/#oracle-contract) 是向区块链提供资产价格的一种机制。
 
-## Uniswap 价格预言机如何工作
+## Uniswap V2 Oracle
+[UniswapV2](../../uniswapV2/oracle.md) 需要用户自己实现价格累计的功能合约 
 
-`Uniswap` 仅仅记录了所有之前的交易价格，就是这样。但是 Uniswap 并没有直接使用实际价格，而是跟踪*累积价格*，也即这个池子合约历史中每秒的价格之和。
+```solidity
+    function snapshot(IUniswapV2Pair uniswapV2pair) public {
+        require(getTimeElapsed() >= 1 hours, "snapshot is not stale");
+
+        // we don't use the reserves, just need the last timestamp update
+        (, , lastSnapshotTime) = uniswapV2pair.getReserves();
+        snapshotPrice0Cumulative = uniswapV2pair.price0CumulativeLast();
+    }
+```
+
+`V2` 中跟踪*累积价格*，也即这个池子合约历史中每秒的价格之和。
 
 $$a_{i} = \sum_{i=1}^t p_{i}$$
 
@@ -15,54 +26,112 @@ $$a_{i} = \sum_{i=1}^t p_{i}$$
 
 $$p_{t_1,t_2} = \frac{a_{t_2} - a_{t_1}}{t_2 - t_1}$$
 
-`Uniswap V2` 中是这样工作的。
+## Uniswap V3 oracle
+### Core Accumulator checkpoints
+
+`Uniswap v3 pool` 中记录以观测值数组的形式存储。
+
+最初，每个 `pool` 仅跟踪单个观测值，并随着区块的生成进行覆盖。
+
+这限制了用户可以访问过去数据的时间。
+
+但是，任何愿意支付交易费的一方都可以增加跟踪观测值的数量（最多为65535），从而将数据可用时间延长至约 9 天或更长时间。
+
+将价格和流动性历史记录直接存储在池合约中，可以大大降低调用合约出现逻辑错误的可能性，并通过消除存储历史值的需要来降低集成成本。此外，v3 预言机的最大长度相当大，这使得预言机价格操纵变得更加困难，因为调用合约可以低成本地在预言机数组长度以内（或完全包含）的任意范围内构建时间加权平均值。
+
 
 在 `V3` 中，略有一些不同。累积的价格通过 `tick` 来计算的（也即价格的 $log_{1.0001}$）：
 
 $$a_{i} = \sum_{i=1}^t log_{1.0001}P(i)$$
 
-而且不再是直接平均价格，而是采用*几何平均数*：
+这里的 `log` 数值后面其实还有一个 `* 1s` 即以每秒作为时间间隔。
 
-$$ P_{t_1,t_2} = \left( \prod_{i=t_1}^{t_2} P_i \right) ^ \frac{1}{t_2-t_1} $$
+然而实际情况中，合约中是以区块的时间戳作为标记时间的，所以合约中的代码跟公式不同。
 
-为了求出两个之间点之间的时间加权几何平均价格，我们用这两个时间点的累积价格详见，除以两点之间的秒数差，然后计算 $1.0001^{x}$：
+每个区块的头一笔交易时更新，此时距离上一次更新时间间隔肯定大于 1s，所以需要将更新值乘以两个区块的时间戳的差。
 
-$$ log_{1.0001}{(P_{t_1,t_2})} = \frac{\sum_{i=t_1}^{t_2} log_{1.0001}(P_i)}{t_2-t_1}$$
-$$ = \frac{a_{t_2} - a_{t_1}}{t_2-t_1}$$
+`tickCumulative` 是 `tick` 序号的累计值，`tick` 的序号就是 `log(√price, 1.0001)`。
 
-$$P_{t_1,t_2} = 1.0001^{\frac{a_{t_2} - a_{t_1}}{t_2-t_1}}$$
+```math
+tickCumulative += tick_current * delta_time
+tickCumulative += tick_current * (blocktimestamp_current - blocktimestamp_before)
+```
+当外部用户使用时，求 t1 到 t2 时间内的时间加权价格 `p(t1,t2)` ，需要计算两个时间点的累计值的差 `a(t2) - a(t1)` 除以时间差。
+$$
+a_{t2}-a_{t1} = \frac{\sum_{i=t1}^{t2}log_{1.0001}(p_i)}{t2-t1}
+$$
 
-`Uniswap V2` 并不存储历史累积价格，这就需要第三方的链上数据服务来自行存储并计算平均价格。
+$$
+log_{1.0001}(p_{t1,t2}) = \frac{a_{t2}-a_{t1}}{t2-t1}
+$$
 
-而 `Uniswap V3`，允许存储最多 `65535` 个历史累积价格，使得获取历史时间加权几何平均价格更容易。
+$$
+p_{t1,t2} = {1.0001}^\frac{a_{t2}-a_{t1}}{t2-t1}
+$$
 
-## 减轻价格操控
+使用几何平均的原因：
 
-另一个重要的点是价格操控，以及如何在 `Uniswap` 中减小它的影响。
+- 因为合约中记录了 tick 序号，序号是整型，且跟价格相关，所以直接计算序号更加节省 gas。（全局变量中存储的不是价格，而是根号价格，如果直接用价格来记录，要多比较复杂的计算）
+- V2 中算数平均价格并不总是倒数关系（以 token1 计价 token0，或反过来），所以需要记录两种价格。V3 中使用几何平均不存在该问题，只需要记录一种价格。
+    - 举个例子，在 V2 中如果 USD/ETH 价格在区块 1 中是 100，在区块 2 中是 300，USD/ETH 的均价是 200 USD/ETH，但是 ETH/USD 的均价是 1/150
+- 几何平均比算数平均能更好的反应真实的价格，受短期波动影响更小。白皮书中的引用提到在几何布朗运动中，算数平均会受到高价格的影响更多。
 
-理论上，我们可以操纵池子的价格来获得利益：例如，买走大量的 token 来提高价格，然后从使用 Uniswap 价格预言机的第三方服务中获取利润，最后卖出 token 回到原价。为了减少这样的攻击，Uniswap 跟踪**区块结束时**的价格，在一个区块的最后一笔交易*之后*。这消除了在同一个区块内部的价格操纵的可能性。
+### Tick 上辅助预言机计算的数据
 
-实际上，Uniswap 预言机中的价格在每个区块的头部更新，并且每个价格在区块的第一笔交易之后计算。
+每个已初始化的 tick 上（有流动性添加的），不光有流动性数量和手续费相关的变量(`liquidityNet`, `liquidityGross`, `feeGrowthOutside`)，还有三个可用于做市策略。
 
-## 价格预言机的实现
+tick 变量一览：
 
-现在让我们开始代码部分。
+| Type   | Variable Name                  | 含义                                  |
+| ------ | ------------------------------ | ------------------------------------- |
+| int128 | liquidityNet                   | 流动性数量净含量                      |
+| int128 | liquidityGross                 | 流动性数量总量                        |
+| int256 | feeGrowthOutside0X128          | 以 token0 收取的 outside 的手续费总量 |
+| int256 | feeGrowthOutside1X128          | 以 token1 收取的 outside 的手续费总量 |
+| int256 | secondsOutside                 | 价格在 outside 的总时间               |
+| int256 | tickCumulativeOutside          | 价格在 outside 的 tick 序号累加       |
+| int256 | secondsPerLiquidityOutsideX128 | 价格在 outside 的每单位流动性参与时长 |
+
+`tick` 辅助预言机的变量的使用方法：
+
+1. `secondsOutside`： 用池子创建以来的总时间减去价格区间两边 tick 上的该变量，就能得出该区间做市的总时长
+2. `tickCumulativeOutside`： 用预言机的 `tickCumulative` 减去价格区间两边 tick 上的该变量，除以做市时长，就能得出该区间平均的做市价格（tick 序号）
+3. `secondsPerLiquidityOutsideX128`： 用预言机的 `secondsPerLiquidityCumulative` 减去价格区间两边 tick 上的该变量，就是该区间内的每单位流动性的做市时长（使用该结果乘以你的流动性数量，得出你的流动性参与的做市时长，这个时长比上 1 的结果，就是你在该区间赚取的手续费比例）。
 
 ### 观测和基数
 
 我们首先创建 `Oracle` 库，以及 `Observation` 结构体：
 
 ```solidity
-// src/lib/Oracle.sol
-library Oracle {
-    struct Observation {
-        uint32 timestamp;
-        int56 tickCumulative;
-        bool initialized;
-    }
-    ...
+struct Observation {
+  // the block timestamp of the observation
+  uint32 blockTimestamp;
+  // the tick accumulator, i.e. tick * time elapsed since the pool was first initialized
+  int56 tickCumulative;
+  // the seconds per liquidity, i.e. seconds elapsed / max(1, liquidity) since the pool was first initialized
+  uint160 secondsPerLiquidityCumulativeX128;
+  // whether or not the observation is initialized
+  bool initialized;
 }
 ```
+
+#### tickCumulative
+`tickCumulative` 存储观察时秒数/范围内流动性的值。
+该值单调递增，每秒增加秒数/范围内流动性的值。
+
+要得出某个时间间隔内的调和平均流动性，调用者需要依次检索两个观测值，取两个值的差值，然后用经过的时间除以该值。
+
+举例：
+> tickCumulative as [70_000, 1_070_000]
+> 
+> Time_elapse = 10 s
+> 
+> Average_Tick = (1_070_000 - 70_000)/10 = 100_000
+> 
+> Average_Price = 1.0001 ** i = 1.0001 ** 100_000 ≅ 22015.5
+
+
+#### secondsPerLiquidityCumulativeX128
 
 *一个观测(observation)*是存储一个记录价格的 slot。它存储一个价格，记录这个价格时的时间戳，以及一个 `initialized` 标志位，当这个观测被激活时设置为 true（并不是所有的观测都默认激活）。一个池子合约能够存储至多 65535 个观测：
 
