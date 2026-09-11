@@ -58,8 +58,8 @@
 
 下面是两个我们合约会产生的 NFT 的例子：
 
-![NFT example 1](/images/milestone_6/nft_example_2.png)
-![NFT example 2](/images/milestone_6/nft_example_3.png)
+![NFT example 1](../images/milestone_6/nft_example_2.png)
+![NFT example 2](../images/milestone_6/nft_example_3.png)
 
 
 ## 依赖

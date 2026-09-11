@@ -1,16 +1,15 @@
 [book]
 authors = ["HuajingYu"]
 language = "en"
-multilingual = false
 src = "src"
 title = "Web3 Uniswap Development Book"
-description = "A book that learns Uniswap DEX programs."
+description = "用 Solidity 从零手写 Uniswap V1/V2/V3 的实战教程：按里程碑实现一套去中心化交易所（DEX），真正读懂 AMM 的底层原理。"
 
 [output.html]
 mathjax-support = true
-curly-quotes = true
+smart-punctuation = true
 git-repository-url = "https://github.com/yuhuajing/uniswap-book"
-git-repository-icon = "fa-github"
+git-repository-icon = "fa-eye"
 #edit-url-template = "https://github.com/yuhuajing/solidity-book/edit/main/{path}"
 cname = "web3-uniswap-dex-programs-book.com"
 

@@ -3,3 +3,12 @@
 .vscode
 book
 .idea
+
+# --- Generated artifacts (do NOT commit) ---
+# Solidity / Foundry build outputs
+out/
+cache/
+artifacts/
+.deps/
+# JS dependencies
+node_modules/

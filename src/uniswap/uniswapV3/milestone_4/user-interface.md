@@ -12,13 +12,13 @@ Uniswap 实现了一个叫做*自动路由(AutoRouter)*的算法，能够在两�
 
 假设我们有这么一堆池子：
 
-![Scattered pools](/images/milestone_4/pools_scattered.png)
+![Scattered pools](../images/milestone_4/pools_scattered.png)
 
 我们如何在这一堆中寻找到两个 token 之间的最短路径呢？
 
 这类问题最合适的解决方法是基于*图(graph)*的算法。图是一种数据结构，由节点（代表实体）和边（节点之间的联系）组成，我们可以把这一对池子转换成一个图，每个节点是一种 token，每条边是这个 token 属于的一个池子。所以一个池子在图中的表示就是由一条边项链的两个节点。上述池子可以转化成下面这样的图：
 
-![Pools graph](/images/milestone_4/pools_graph.png)
+![Pools graph](../images/milestone_4/pools_graph.png)
 
 图的最大优势在于我们能够遍历节点来寻找路径。在这里，我们将使用 [A* 算法](https://en.wikipedia.org/wiki/A*_search_algorithm)。如果有兴趣可以学习一下这个算法如何工作，但在我们的 app 里，我们使用一个实现了这个算法的库。我们使用 [ngraph.ngraph](https://github.com/anvaka/ngraph.graph) 来建图，使用 [ngraph.path](https://github.com/anvaka/ngraph.path) 来寻找最短路径（这个库实现了 A* 算法）。
 
